@@ -39,10 +39,23 @@
 
     <q-list bordered separator v-if="show">
       <q-item>
+        <q-item-section side class="col-2">cheapest</q-item-section>
         <q-item-section>
           <q-item-label overline>{{ cheapestName }}</q-item-label>
           <q-item-label>With sale: {{ priceOfCheapestWithSale }}</q-item-label>
           <q-item-label>No sale: {{ priceOfCheapestWithoutSale }}</q-item-label>
+        </q-item-section>
+      </q-item>
+      <q-item>
+        <q-item-section side class="col-2">most expensive</q-item-section>
+        <q-item-section>
+          <q-item-label overline>{{ mostExpensiveName }}</q-item-label>
+          <q-item-label
+            >With sale: {{ priceOfMostExpensiveWithSale }}</q-item-label
+          >
+          <q-item-label
+            >No sale: {{ priceOfMostExpensiveWithoutSale }}</q-item-label
+          >
         </q-item-section>
       </q-item>
     </q-list>
@@ -150,5 +163,8 @@ function handleUpdate(value) {
 }
 .price {
   display: inline-block;
+}
+.q-item__section.column.q-item__section--side {
+  text-align: center;
 }
 </style>
