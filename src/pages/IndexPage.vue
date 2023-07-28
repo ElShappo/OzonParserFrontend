@@ -38,11 +38,11 @@
     </div> -->
 
     <q-list bordered separator v-if="show">
-      <q-item clickable v-ripple>
+      <q-item>
         <q-item-section>
           <q-item-label overline>{{ cheapestName }}</q-item-label>
-          <q-item-label>Price with sale: {{ priceWithSale }}</q-item-label>
-          <q-item-label>Price with sale: {{ priceWithoutSale }}</q-item-label>
+          <q-item-label>With sale: {{ priceOfCheapestWithSale }}</q-item-label>
+          <q-item-label>No sale: {{ priceOfCheapestWithoutSale }}</q-item-label>
         </q-item-section>
       </q-item>
     </q-list>
@@ -54,19 +54,24 @@ import { ref } from "vue";
 
 const model = ref(null);
 const show = ref(false);
+
 const cheapestName = ref("");
-const priceWithSale = ref("");
-const priceWithoutSale = ref("");
+const priceOfCheapestWithSale = ref("");
+const priceOfCheapestWithoutSale = ref("");
+
+const mostExpensiveName = ref("");
+const priceOfMostExpensiveWithSale = ref("");
+const priceOfMostExpensiveWithoutSale = ref("");
 
 const sortMethods = ["ozon_card_price", "price_desc"];
 
 const stringOptions = [
+  "Dr. Beckmann Ловушка для цвета и грязи (одноразовая) 24 шт",
+  "Dr. Beckmann Очиститель для стиральных машин гигиенический 250 гр",
+  "Dr. Beckmann Спрей пятновыводитель Дезодорант и пот 250 мл",
+  "Dr.Beckmann Спрей пятновыводитель 250 мл",
+  "Dr. Beckmann Средство для чистки и блеска стеклокерамики спрей 250 мл",
   "Aqualine Впитывающая губка, 3 шт.",
-  "Google",
-  "Facebook",
-  "Twitter",
-  "Apple",
-  "Oracle",
 ];
 const options = ref(stringOptions);
 
@@ -99,20 +104,41 @@ function handleUpdate(value) {
       console.log(html);
       const parser = new DOMParser();
       const htmlDocument = parser.parseFromString(html, "text/html");
-      const cheapest = htmlDocument.documentElement.querySelector(".i5j.ij6");
-
-      console.log(cheapest);
+      const cheapest = htmlDocument.documentElement.querySelector(
+        ".widget-search-result-container > div > div"
+      );
 
       let pricesSection = cheapest.querySelector(":scope > div > div");
       let name = cheapest.querySelector(":scope > div > a > div > span");
 
       let prices = pricesSection.querySelector(":scope > div");
-      priceWithSale.value =
+      priceOfCheapestWithSale.value =
         prices.querySelectorAll(":scope > span")[0].innerHTML;
-      priceWithoutSale.value =
+      priceOfCheapestWithoutSale.value =
         prices.querySelectorAll(":scope > span")[1].innerHTML;
 
       cheapestName.value = name.innerHTML;
+    })
+    .then(() => fetch(queryDescPrice))
+    .then((response) => response.text())
+    .then((html) => {
+      console.log(html);
+      const parser = new DOMParser();
+      const htmlDocument = parser.parseFromString(html, "text/html");
+      const mostExpensive = htmlDocument.documentElement.querySelector(
+        ".widget-search-result-container > div > div"
+      );
+
+      let pricesSection = mostExpensive.querySelector(":scope > div > div");
+      let name = mostExpensive.querySelector(":scope > div > a > div > span");
+
+      let prices = pricesSection.querySelector(":scope > div");
+      priceOfMostExpensiveWithSale.value =
+        prices.querySelectorAll(":scope > span")[0].innerHTML;
+      priceOfMostExpensiveWithoutSale.value =
+        prices.querySelectorAll(":scope > span")[1].innerHTML;
+
+      mostExpensiveName.value = name.innerHTML;
       show.value = true;
     });
 }
