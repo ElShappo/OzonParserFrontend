@@ -38,7 +38,7 @@
     </div> -->
 
     <q-list bordered separator v-if="show">
-      <q-item>
+      <q-item :href="linkToCheapest" target="_blank">
         <q-item-section side class="col-2">cheapest</q-item-section>
         <q-item-section>
           <q-item-label overline>{{ cheapestName }}</q-item-label>
@@ -46,7 +46,7 @@
           <q-item-label>No sale: {{ priceOfCheapestWithoutSale }}</q-item-label>
         </q-item-section>
       </q-item>
-      <q-item>
+      <q-item :href="linkToMostExpensive" target="_blank">
         <q-item-section side class="col-2">most expensive</q-item-section>
         <q-item-section>
           <q-item-label overline>{{ mostExpensiveName }}</q-item-label>
@@ -71,10 +71,12 @@ const show = ref(false);
 const cheapestName = ref("");
 const priceOfCheapestWithSale = ref("");
 const priceOfCheapestWithoutSale = ref("");
+const linkToCheapest = ref("");
 
 const mostExpensiveName = ref("");
 const priceOfMostExpensiveWithSale = ref("");
 const priceOfMostExpensiveWithoutSale = ref("");
+const linkToMostExpensive = ref("");
 
 const sortMethods = ["ozon_card_price", "price_desc"];
 
@@ -107,6 +109,13 @@ function filterFn(val, update) {
   });
 }
 
+function fullDomain(partialPath) {
+  console.log(partialPath);
+  let improvedPartialPath = partialPath.match(/product\/.+/);
+  let marketplaceDomain = "https://www.ozon.ru/";
+  return marketplaceDomain + improvedPartialPath;
+}
+
 function handleUpdate(value) {
   let queryAscPrice = `https://www.ozon.ru/search/?from_global=true&sorting=${sortMethods[0]}&text=${value}`;
   let queryDescPrice = `https://www.ozon.ru/search/?from_global=true&sorting=${sortMethods[1]}&text=${value}`;
@@ -114,7 +123,6 @@ function handleUpdate(value) {
   let dataAscPrice = fetch(queryAscPrice)
     .then((response) => response.text())
     .then((html) => {
-      console.log(html);
       const parser = new DOMParser();
       const htmlDocument = parser.parseFromString(html, "text/html");
       const cheapest = htmlDocument.documentElement.querySelector(
@@ -122,7 +130,11 @@ function handleUpdate(value) {
       );
 
       let pricesSection = cheapest.querySelector(":scope > div > div");
-      let name = cheapest.querySelector(":scope > div > a > div > span");
+      let link = cheapest.querySelector(":scope > div > a");
+      let name = link.querySelector(":scope > div > span");
+
+      let partialPath = link.href;
+      linkToCheapest.value = fullDomain(partialPath);
 
       let prices = pricesSection.querySelector(":scope > div");
       priceOfCheapestWithSale.value =
@@ -143,7 +155,11 @@ function handleUpdate(value) {
       );
 
       let pricesSection = mostExpensive.querySelector(":scope > div > div");
-      let name = mostExpensive.querySelector(":scope > div > a > div > span");
+      let link = mostExpensive.querySelector(":scope > div > a");
+      let name = link.querySelector(":scope > div > span");
+
+      let partialPath = link.href;
+      linkToMostExpensive.value = fullDomain(partialPath);
 
       let prices = pricesSection.querySelector(":scope > div");
       priceOfMostExpensiveWithSale.value =
