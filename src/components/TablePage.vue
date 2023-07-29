@@ -1,69 +1,53 @@
 <template>
-  <q-page class="column justify-start items-center">
-    <h4 class="text-center full-width text-weight-light">
-      Choose the item from the list:
-    </h4>
-    <q-select
-      filled
-      v-model="model"
-      use-input
-      input-debounce="0"
-      label="Item"
-      :options="options"
-      @filter="filterFn"
-      @update:model-value="handleUpdate"
-      style="min-width: 25vw"
-      class="dropdown q-pb-xl"
-    >
-      <template v-slot:no-option>
-        <q-item>
-          <q-item-section class="text-grey"> No results </q-item-section>
-        </q-item>
-      </template>
-    </q-select>
-
-    <!-- <div
-      class="item full-width row justify-center text-center text-h5"
-      v-show="show"
-    >
-      <div class="full-width q-pb-md">
-        <div class="">Name:</div>
-        <div class="name col-7"></div>
-      </div>
-
-      <div class="full-width">
-        <div class="">Price:</div>
-        <div class="price col-7"></div>
-      </div>
-    </div> -->
-
-    <q-list bordered separator v-if="show">
-      <q-item :href="linkToCheapest" target="_blank">
-        <q-item-section side class="col-2">cheapest</q-item-section>
-        <q-item-section>
-          <q-item-label overline>{{ cheapestName }}</q-item-label>
-          <q-item-label>With sale: {{ priceOfCheapestWithSale }}</q-item-label>
-          <q-item-label>No sale: {{ priceOfCheapestWithoutSale }}</q-item-label>
-        </q-item-section>
+  <h4 class="text-center full-width text-weight-light">
+    Choose the item from the list:
+  </h4>
+  <q-select
+    filled
+    v-model="model"
+    use-input
+    input-debounce="0"
+    label="Item"
+    :options="options"
+    @filter="filterFn"
+    @update:model-value="handleUpdate"
+    style="min-width: 25vw"
+    class="dropdown q-pb-xl"
+  >
+    <template v-slot:no-option>
+      <q-item>
+        <q-item-section class="text-grey"> No results </q-item-section>
       </q-item>
-      <q-item :href="linkToMostExpensive" target="_blank">
-        <q-item-section side class="col-2">most expensive</q-item-section>
-        <q-item-section>
-          <q-item-label overline>{{ mostExpensiveName }}</q-item-label>
-          <q-item-label
-            >With sale: {{ priceOfMostExpensiveWithSale }}</q-item-label
-          >
-          <q-item-label
-            >No sale: {{ priceOfMostExpensiveWithoutSale }}</q-item-label
-          >
-        </q-item-section>
-      </q-item>
-    </q-list>
-  </q-page>
+    </template>
+  </q-select>
+
+  <q-list bordered separator v-if="show">
+    <q-item :href="linkToCheapest" target="_blank">
+      <q-item-section side class="col-2">cheapest</q-item-section>
+      <q-item-section>
+        <q-item-label overline>{{ cheapestName }}</q-item-label>
+        <q-item-label>With sale: {{ priceOfCheapestWithSale }}</q-item-label>
+        <q-item-label>No sale: {{ priceOfCheapestWithoutSale }}</q-item-label>
+      </q-item-section>
+    </q-item>
+    <q-item :href="linkToMostExpensive" target="_blank">
+      <q-item-section side class="col-2">most expensive</q-item-section>
+      <q-item-section>
+        <q-item-label overline>{{ mostExpensiveName }}</q-item-label>
+        <q-item-label
+          >With sale: {{ priceOfMostExpensiveWithSale }}</q-item-label
+        >
+        <q-item-label
+          >No sale: {{ priceOfMostExpensiveWithoutSale }}</q-item-label
+        >
+      </q-item-section>
+    </q-item>
+  </q-list>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, defineProps, onMounted } from "vue";
+const props = defineProps(["stringOptions"]);
 
 const model = ref(null);
 const show = ref(false);
@@ -80,20 +64,22 @@ const linkToMostExpensive = ref("");
 
 const sortMethods = ["ozon_card_price", "price_desc"];
 
-const stringOptions = [
-  "Dr. Beckmann Ловушка для цвета и грязи (одноразовая) 24 шт",
-  "Dr. Beckmann Очиститель для стиральных машин гигиенический 250 гр",
-  "Dr. Beckmann Спрей пятновыводитель Дезодорант и пот 250 мл",
-  "Dr.Beckmann Спрей пятновыводитель 250 мл",
-  "Dr. Beckmann Средство для чистки и блеска стеклокерамики спрей 250 мл",
-  "Aqualine Впитывающая губка, 3 шт.",
-];
-const options = ref(stringOptions);
+// const stringOptions = [
+//   "Dr. Beckmann Ловушка для цвета и грязи (одноразовая) 24 шт",
+//   "Dr. Beckmann Очиститель для стиральных машин гигиенический 250 гр",
+//   "Dr. Beckmann Спрей пятновыводитель Дезодорант и пот 250 мл",
+//   "Dr.Beckmann Спрей пятновыводитель 250 мл",
+//   "Dr. Beckmann Средство для чистки и блеска стеклокерамики спрей 250 мл",
+//   "Aqualine Впитывающая губка, 3 шт.",
+// ];
+
+const options = ref(props.stringOptions);
+console.log(options);
 
 function filterFn(val, update) {
   if (val === "") {
     update(() => {
-      options.value = stringOptions;
+      options.value = props.stringOptions;
 
       // here you have access to "ref" which
       // is the Vue reference of the QSelect
@@ -103,7 +89,7 @@ function filterFn(val, update) {
 
   update(() => {
     const needle = val.toLowerCase();
-    options.value = stringOptions.filter(
+    options.value = props.stringOptions.filter(
       (v) => v.toLowerCase().indexOf(needle) > -1
     );
   });
@@ -169,6 +155,9 @@ function handleUpdate(value) {
 
       mostExpensiveName.value = name.innerHTML;
       show.value = true;
+
+      console.log("test");
+      console.log(props.stringOptions);
     });
 }
 </script>

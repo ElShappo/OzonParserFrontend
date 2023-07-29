@@ -1,14 +1,23 @@
 <template>
-  <q-uploader
-    label="Upload your xlsx file"
-    max-files="1"
-    accept=".xlsx"
-    @added="onFileAdd"
-  />
+  <q-page class="column justify-start items-center">
+    <q-uploader
+      label="Upload your xlsx file"
+      max-files="1"
+      accept=".xlsx"
+      @added="onFileAdd"
+      class="q-mt-xl"
+    />
+    <TablePage :stringOptions="items" v-if="show"></TablePage>
+  </q-page>
 </template>
 
 <script setup>
 import * as XLSX from "xlsx";
+import { ref } from "vue";
+import TablePage from "src/components/TablePage.vue";
+
+const items = ref([]);
+const show = ref(false);
 
 function findCellAddressByContent(rawData, content) {
   let rowIndex = 0;
@@ -57,8 +66,14 @@ function onFileAdd(event) {
 
       console.log(rowIndex, columnIndex);
 
-      let items = getAllBelowSpecified(rowIndex, columnIndex, rawData);
+      items.value = getAllBelowSpecified(rowIndex, columnIndex, rawData);
       console.log(items);
+
+      items.value = items.value.filter(
+        (item) => item !== null && item !== undefined && item !== ""
+      );
+      console.log(items.value);
+      show.value = true;
     });
 }
 </script>
