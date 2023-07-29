@@ -9,8 +9,8 @@
     />
     <TablePage
       :productNames="productNames"
-      :productOldMinPrices="productOldMinPrices"
-      :productOldMaxPrices="productOldMaxPrices"
+      :productNewMinPrices="productNewMinPrices"
+      :productNewMaxPrices="productNewMaxPrices"
       v-if="showTableComponent"
     ></TablePage>
   </q-page>
@@ -22,8 +22,8 @@ import { ref } from "vue";
 import TablePage from "src/components/TablePage.vue";
 
 const productNames = ref([]); // product names will be stored there after .xlsx file parse
-const productOldMinPrices = ref([]); // product old min prices will be stored there after .xlsx file parse (if present)
-const productOldMaxPrices = ref([]); // product old max prices will be stored there after .xlsx file parse (if present)
+const productNewMinPrices = ref([]); // product New min prices will be stored there after .xlsx file parse (if present)
+const productNewMaxPrices = ref([]); // product New max prices will be stored there after .xlsx file parse (if present)
 
 const showTableComponent = ref(false); // whether to show table with data (defaults to 'false' before .xlsx file parse)
 
@@ -73,18 +73,18 @@ function onFileAdd(event) {
       let [columnNameRowIndex, columnNameColumnIndex] =
         findCellAddressByContent(rawData, columnName);
 
-      let columnOldMinPrice = "Старая мин. цена";
-      let columnOldMaxPrice = "Старая макс. цена";
+      let columnNewMinPrice = "Старая мин. цена";
+      let columnNewMaxPrice = "Старая макс. цена";
 
-      let [columnOldMinPriceRowIndex, columnOldMinPriceColumnIndex] =
-        findCellAddressByContent(rawData, columnOldMinPrice);
+      let [columnNewMinPriceRowIndex, columnNewMinPriceColumnIndex] =
+        findCellAddressByContent(rawData, columnNewMinPrice);
 
-      let [columnOldMaxPriceRowIndex, columnOldMaxPriceColumnIndex] =
-        findCellAddressByContent(rawData, columnOldMaxPrice);
+      let [columnNewMaxPriceRowIndex, columnNewMaxPriceColumnIndex] =
+        findCellAddressByContent(rawData, columnNewMaxPrice);
 
       console.log(columnNameRowIndex, columnNameColumnIndex);
-      console.log(columnOldMinPriceRowIndex, columnOldMinPriceColumnIndex);
-      console.log(columnOldMaxPriceRowIndex, columnOldMaxPriceColumnIndex);
+      console.log(columnNewMinPriceRowIndex, columnNewMinPriceColumnIndex);
+      console.log(columnNewMaxPriceRowIndex, columnNewMaxPriceColumnIndex);
 
       productNames.value = getAllBelowSpecified(
         columnNameRowIndex,
@@ -100,33 +100,33 @@ function onFileAdd(event) {
 
       console.log(productNames.value);
 
-      productOldMinPrices.value = getAllBelowSpecified(
-        columnOldMinPriceRowIndex,
-        columnOldMinPriceColumnIndex,
+      productNewMinPrices.value = getAllBelowSpecified(
+        columnNewMinPriceRowIndex,
+        columnNewMinPriceColumnIndex,
         rawData
-      ); // get all product old min prices below the corresponding title
+      ); // get all product New min prices below the corresponding title
 
-      console.log(productOldMinPrices.value);
+      console.log(productNewMinPrices.value);
 
-      productOldMinPrices.value = productOldMinPrices.value.filter(
+      productNewMinPrices.value = productNewMinPrices.value.filter(
         (item) => item !== null && item !== undefined && item !== ""
       ); // if there are empty cells, we get rid of them
 
-      console.log(productOldMinPrices.value);
+      console.log(productNewMinPrices.value);
 
-      productOldMaxPrices.value = getAllBelowSpecified(
-        columnOldMaxPriceRowIndex,
-        columnOldMaxPriceColumnIndex,
+      productNewMaxPrices.value = getAllBelowSpecified(
+        columnNewMaxPriceRowIndex,
+        columnNewMaxPriceColumnIndex,
         rawData
-      ); // get all product old max prices below the corresponding title
+      ); // get all product New max prices below the corresponding title
 
-      console.log(productOldMaxPrices.value);
+      console.log(productNewMaxPrices.value);
 
-      productOldMaxPrices.value = productOldMaxPrices.value.filter(
+      productNewMaxPrices.value = productNewMaxPrices.value.filter(
         (item) => item !== null && item !== undefined && item !== ""
       ); // if there are empty cells, we get rid of them
 
-      console.log(productOldMaxPrices.value);
+      console.log(productNewMaxPrices.value);
 
       showTableComponent.value = true;
     });
