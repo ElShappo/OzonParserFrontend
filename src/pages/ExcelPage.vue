@@ -3,16 +3,12 @@
     label="Upload your xlsx file"
     max-files="1"
     accept=".xlsx"
-    url="http://localhost:4444/upload"
     @added="onFileAdd"
   />
 </template>
 
 <script setup>
-// import { ref, onMounted } from "vue";
-// import { read, utils } from "xlsx";
 import * as XLSX from "xlsx";
-import readXlsxFile from "read-excel-file";
 
 function findCellAddressByContent(rawData, content) {
   let rowIndex = 0;
