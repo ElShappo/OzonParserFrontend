@@ -2,13 +2,21 @@
   <h4 class="text-center full-width text-weight-light">
     Choose the item from the list:
   </h4>
+  <div class="q-pa-md">
+    <q-table
+      title="OZON marketplace"
+      :rows="rows"
+      :columns="columns"
+      row-key="name"
+    />
+  </div>
   <q-select
     filled
     v-model="model"
     use-input
     input-debounce="0"
     label="Item"
-    :options="options"
+    :options="productNamesRef"
     @filter="filterFn"
     @update:model-value="handleUpdate"
     style="min-width: 25vw"
@@ -47,7 +55,7 @@
 
 <script setup>
 import { ref, defineProps, onMounted } from "vue";
-const props = defineProps(["stringOptions"]);
+const props = defineProps(["productNames"]);
 
 const model = ref(null);
 const show = ref(false);
@@ -64,22 +72,62 @@ const linkToMostExpensive = ref("");
 
 const sortMethods = ["ozon_card_price", "price_desc"];
 
-// const stringOptions = [
-//   "Dr. Beckmann Ловушка для цвета и грязи (одноразовая) 24 шт",
-//   "Dr. Beckmann Очиститель для стиральных машин гигиенический 250 гр",
-//   "Dr. Beckmann Спрей пятновыводитель Дезодорант и пот 250 мл",
-//   "Dr.Beckmann Спрей пятновыводитель 250 мл",
-//   "Dr. Beckmann Средство для чистки и блеска стеклокерамики спрей 250 мл",
-//   "Aqualine Впитывающая губка, 3 шт.",
-// ];
+const columns = [
+  {
+    name: "name",
+    required: true,
+    label: "Item name",
+    align: "left",
+    field: (row) => row.name,
+    format: (val) => `${val}`,
+  },
+  {
+    name: "old min price",
+    align: "center",
+    label: "old min price",
+    field: "old min price",
+    sortable: true,
+  },
+  {
+    name: "old max price",
+    align: "center",
+    label: "old max price",
+    field: "old max price",
+    sortable: true,
+  },
+  {
+    name: "new min price",
+    align: "center",
+    label: "new min price",
+    field: "new min price",
+    sortable: true,
+  },
+  {
+    name: "new max price",
+    align: "center",
+    label: "new max price",
+    field: "new max price",
+    sortable: true,
+  },
+];
 
-const options = ref(props.stringOptions);
-console.log(options);
+const rows = ref([
+  {
+    name: "Test",
+    "old min price": 5,
+    "old max price": 8,
+    "new min price": 1,
+    "new max price": 5,
+  },
+]);
+
+const productNamesRef = ref(props.productNames);
+console.log(productNamesRef);
 
 function filterFn(val, update) {
   if (val === "") {
     update(() => {
-      options.value = props.stringOptions;
+      productNamesRef.value = props.productNames;
 
       // here you have access to "ref" which
       // is the Vue reference of the QSelect
@@ -89,7 +137,7 @@ function filterFn(val, update) {
 
   update(() => {
     const needle = val.toLowerCase();
-    options.value = props.stringOptions.filter(
+    productNamesRef.value = props.productNames.filter(
       (v) => v.toLowerCase().indexOf(needle) > -1
     );
   });
@@ -157,7 +205,7 @@ function handleUpdate(value) {
       show.value = true;
 
       console.log("test");
-      console.log(props.stringOptions);
+      console.log(props.productNames);
     });
 }
 </script>

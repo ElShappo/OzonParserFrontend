@@ -7,7 +7,12 @@
       @added="onFileAdd"
       class="q-mt-xl"
     />
-    <TablePage :stringOptions="items" v-if="show"></TablePage>
+    <TablePage
+      :productNames="productNames"
+      :productOldMinPrices="productOldMinPrices"
+      :productOldMaxPrices="productOldMaxPrices"
+      v-if="showTableComponent"
+    ></TablePage>
   </q-page>
 </template>
 
@@ -16,10 +21,14 @@ import * as XLSX from "xlsx";
 import { ref } from "vue";
 import TablePage from "src/components/TablePage.vue";
 
-const items = ref([]);
-const show = ref(false);
+const productNames = ref([]); // product names will be stored there after .xlsx file parse
+const productOldMinPrices = ref([]); // product old min prices will be stored there after .xlsx file parse (if present)
+const productOldMaxPrices = ref([]); // product old max prices will be stored there after .xlsx file parse (if present)
+
+const showTableComponent = ref(false); // whether to show table with data (defaults to 'false' before .xlsx file parse)
 
 function findCellAddressByContent(rawData, content) {
+  // find the address (row index and column index) of the cell with a specific 'content'
   let rowIndex = 0;
   for (let row of rawData) {
     let columnIndex = 0;
@@ -32,9 +41,11 @@ function findCellAddressByContent(rawData, content) {
     }
     ++rowIndex;
   }
+  return [null, null];
 }
 
 function getAllBelowSpecified(rowIndex, columnIndex, rawData) {
+  // get all cells below the specified address (excluding the topmost cell)
   let cells = [];
   for (let i = rowIndex + 1; i < rawData.length; i++) {
     cells.push(rawData[i][columnIndex]);
@@ -59,21 +70,65 @@ function onFileAdd(event) {
       console.log(rawData);
 
       let columnName = "Наименование товара";
-      let [rowIndex, columnIndex] = findCellAddressByContent(
-        rawData,
-        columnName
-      );
+      let [columnNameRowIndex, columnNameColumnIndex] =
+        findCellAddressByContent(rawData, columnName);
 
-      console.log(rowIndex, columnIndex);
+      let columnOldMinPrice = "Старая мин. цена";
+      let columnOldMaxPrice = "Старая макс. цена";
 
-      items.value = getAllBelowSpecified(rowIndex, columnIndex, rawData);
-      console.log(items);
+      let [columnOldMinPriceRowIndex, columnOldMinPriceColumnIndex] =
+        findCellAddressByContent(rawData, columnOldMinPrice);
 
-      items.value = items.value.filter(
+      let [columnOldMaxPriceRowIndex, columnOldMaxPriceColumnIndex] =
+        findCellAddressByContent(rawData, columnOldMaxPrice);
+
+      console.log(columnNameRowIndex, columnNameColumnIndex);
+      console.log(columnOldMinPriceRowIndex, columnOldMinPriceColumnIndex);
+      console.log(columnOldMaxPriceRowIndex, columnOldMaxPriceColumnIndex);
+
+      productNames.value = getAllBelowSpecified(
+        columnNameRowIndex,
+        columnNameColumnIndex,
+        rawData
+      ); // get all product names below the corresponding title
+
+      console.log(productNames.value);
+
+      productNames.value = productNames.value.filter(
         (item) => item !== null && item !== undefined && item !== ""
-      );
-      console.log(items.value);
-      show.value = true;
+      ); // if there are empty cells, we get rid of them
+
+      console.log(productNames.value);
+
+      productOldMinPrices.value = getAllBelowSpecified(
+        columnOldMinPriceRowIndex,
+        columnOldMinPriceColumnIndex,
+        rawData
+      ); // get all product old min prices below the corresponding title
+
+      console.log(productOldMinPrices.value);
+
+      productOldMinPrices.value = productOldMinPrices.value.filter(
+        (item) => item !== null && item !== undefined && item !== ""
+      ); // if there are empty cells, we get rid of them
+
+      console.log(productOldMinPrices.value);
+
+      productOldMaxPrices.value = getAllBelowSpecified(
+        columnOldMaxPriceRowIndex,
+        columnOldMaxPriceColumnIndex,
+        rawData
+      ); // get all product old max prices below the corresponding title
+
+      console.log(productOldMaxPrices.value);
+
+      productOldMaxPrices.value = productOldMaxPrices.value.filter(
+        (item) => item !== null && item !== undefined && item !== ""
+      ); // if there are empty cells, we get rid of them
+
+      console.log(productOldMaxPrices.value);
+
+      showTableComponent.value = true;
     });
 }
 </script>
