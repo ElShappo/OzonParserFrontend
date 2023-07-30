@@ -1,14 +1,12 @@
 <template>
-  <h4 class="text-center full-width text-weight-light">
-    Choose the item from the list:
-  </h4>
-  <div class="q-pa-md full-width">
+  <div class="q-pa-md q-pt-xl full-width">
     <q-table
       title="OZON marketplace"
       :rows="rows"
       :columns="columns"
       row-key="name"
-      style="width: 100%; height: 500px"
+      style="width: 100%; height: 600px"
+      class="my-sticky-header-table"
       v-if="show"
     >
       <template v-slot:body="props">
@@ -229,9 +227,6 @@ onMounted(() => {
           priceWithoutSale: priceOfMostExpensiveWithoutSale,
           link: linkToMostExpensive,
         });
-
-        // productNewMinPricesRef.value.push(priceOfCheapestWithSale.value);
-        // productNewMaxPricesRef.value.push(priceOfMostExpensiveWithSale.value);
 
         rows.value.push({
           name: productName,
@@ -456,5 +451,37 @@ async function findProductsWithMinMaxPrice(productName) {
 }
 .q-item__section.column.q-item__section--side {
   text-align: center;
+}
+
+.my-sticky-header-table {
+  /* height or max-height is important */
+  height: 310px;
+}
+
+.q-table__top,
+.q-table__bottom,
+thead tr:first-child th {
+  /* bg color is important for th; just specify one */
+  background-color: white;
+}
+
+thead tr th {
+  position: sticky;
+  z-index: 1;
+}
+thead tr:first-child th {
+  top: 0;
+}
+
+/* this is when the loading indicator appears */
+&.q-table--loading thead tr:last-child th {
+  /* height of all previous header rows */
+  top: 48px;
+}
+
+/* prevent scrolling behind sticky top row on focus */
+tbody {
+  /* height of all previous header rows */
+  scroll-margin-top: 48px;
 }
 </style>
