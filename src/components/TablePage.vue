@@ -51,10 +51,13 @@
         </q-tr>
       </template>
     </q-table>
+    <TableSkeletonPage v-else />
   </div>
 </template>
 
 <script setup>
+import * as XLSX from "xlsx";
+import TableSkeletonPage from "./TableSkeletonPage.vue";
 import { ref, defineProps, onMounted } from "vue";
 const props = defineProps([
   "productNames",
@@ -129,53 +132,58 @@ const rows = ref([]);
 
 onMounted(() => {
   let i = 0;
+  let promises = [];
   for (let productName of props.productNames) {
-    findProductsWithMinMaxPrice(productName).then(
-      ([productWithMinPrice, productWithMaxPrice]) => {
-        let [
-          cheapestName,
-          priceOfCheapestWithSale,
-          priceOfCheapestWithoutSale,
-          linkToCheapest,
-        ] = productWithMinPrice;
+    promises.push(
+      findProductsWithMinMaxPrice(productName).then(
+        ([productWithMinPrice, productWithMaxPrice]) => {
+          let [
+            cheapestName,
+            priceOfCheapestWithSale,
+            priceOfCheapestWithoutSale,
+            linkToCheapest,
+          ] = productWithMinPrice;
 
-        cheapestProducts.value.push({
-          name: cheapestName,
-          priceWithSale: priceOfCheapestWithSale,
-          priceWithoutSale: priceOfCheapestWithoutSale,
-          link: linkToCheapest,
-        });
+          cheapestProducts.value.push({
+            name: cheapestName,
+            priceWithSale: priceOfCheapestWithSale,
+            priceWithoutSale: priceOfCheapestWithoutSale,
+            link: linkToCheapest,
+          });
 
-        let [
-          mostExpensiveName,
-          priceOfMostExpensiveWithSale,
-          priceOfMostExpensiveWithoutSale,
-          linkToMostExpensive,
-        ] = productWithMaxPrice;
+          let [
+            mostExpensiveName,
+            priceOfMostExpensiveWithSale,
+            priceOfMostExpensiveWithoutSale,
+            linkToMostExpensive,
+          ] = productWithMaxPrice;
 
-        mostExpensiveProducts.value.push({
-          name: mostExpensiveName,
-          priceWithSale: priceOfMostExpensiveWithSale,
-          priceWithoutSale: priceOfMostExpensiveWithoutSale,
-          link: linkToMostExpensive,
-        });
+          mostExpensiveProducts.value.push({
+            name: mostExpensiveName,
+            priceWithSale: priceOfMostExpensiveWithSale,
+            priceWithoutSale: priceOfMostExpensiveWithoutSale,
+            link: linkToMostExpensive,
+          });
 
-        rows.value.push({
-          name: productName,
-          "old min price": props.productNewMinPrices[i], // new prices now become old
-          "old max price": props.productNewMaxPrices[i], // new prices now become old
+          rows.value.push({
+            name: productName,
+            "old min price": props.productNewMinPrices[i], // new prices now become old
+            "old max price": props.productNewMaxPrices[i], // new prices now become old
 
-          "new min price": priceOfCheapestWithSale,
-          "new min price pn": cheapestName,
+            "new min price": priceOfCheapestWithSale,
+            "new min price pn": cheapestName,
 
-          "new max price": priceOfMostExpensiveWithSale,
-          "new max price pn": mostExpensiveName,
-        });
-        ++i;
-      }
+            "new max price": priceOfMostExpensiveWithSale,
+            "new max price pn": mostExpensiveName,
+          });
+          ++i;
+        }
+      )
     );
   }
-  showTable.value = true;
+  Promise.all(promises).then(() => {
+    showTable.value = true;
+  });
 });
 
 function fullDomain(partialPath) {
@@ -278,6 +286,19 @@ async function findProductsWithMinMaxPrice(productName) {
     findProductWithMinPrice(productName),
     findProductWithMaxPrice(productName),
   ]);
+}
+
+function exportTable() {
+  let columnsSlice = columns.map((column) => column.name);
+  let rowsSlice = rows.value.map((row) => Object.values(row));
+
+  let aoa = rowsSlice.slice();
+  aoa.unshift(columnsSlice);
+
+  console.log(aoa);
+
+  const workbook = XLSX.utils.book_new();
+  let worksheet = XLSX.utils.aoa_to_sheet(aoa);
 }
 </script>
 
