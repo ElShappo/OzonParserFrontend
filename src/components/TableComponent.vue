@@ -53,6 +53,13 @@
     </q-table>
     <TableSkeletonComponent v-else />
   </div>
+  <q-btn
+    color="primary"
+    icon="file_download"
+    label="Export table (.xlsx)"
+    @click="exportTable"
+    v-if="showTable"
+  />
 </template>
 
 <script setup>
@@ -305,10 +312,13 @@ function exportTable() {
   let aoa = rowsSlice.slice();
   aoa.unshift(columnsSlice);
 
-  console.log(aoa);
+  console.log("hey!");
+  console.warn(aoa);
 
   const workbook = XLSX.utils.book_new();
   let worksheet = XLSX.utils.aoa_to_sheet(aoa);
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+  XLSX.writeFile(workbook, "test1.xlsx");
 }
 </script>
 
