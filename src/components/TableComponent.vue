@@ -58,12 +58,14 @@
 <script setup>
 import * as XLSX from "xlsx";
 import TableSkeletonComponent from "./TableSkeletonComponent.vue";
+import { useQuasar } from "quasar";
 import { ref, defineProps, onMounted } from "vue";
 const props = defineProps([
   "productNames",
   "productNewMinPrices",
   "productNewMaxPrices",
 ]);
+const $q = useQuasar();
 
 const showTable = ref(false);
 
@@ -133,6 +135,13 @@ const rows = ref([]);
 onMounted(() => {
   let i = 0;
   let promises = [];
+
+  const tableLoadingNotify = $q.notify({
+    spinner: true,
+    message: "Table is loading...",
+    timeout: 0,
+  });
+
   for (let productName of props.productNames) {
     promises.push(
       findProductsWithMinMaxPrice(productName).then(
@@ -182,6 +191,7 @@ onMounted(() => {
     );
   }
   Promise.all(promises).then(() => {
+    tableLoadingNotify();
     showTable.value = true;
   });
 });
