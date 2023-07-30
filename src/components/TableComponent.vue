@@ -210,98 +210,58 @@ function fullDomain(partialPath) {
   return marketplaceDomain + improvedPartialPath;
 }
 
-async function findProductWithMinPrice(productName) {
-  let queryAscPrice = `https://www.ozon.ru/search/?from_global=true&sorting=${sortMethods[0]}&text=${productName}`;
+async function findProductWithMinOrMaxPrice(productName, mode = "min") {
+  let query;
+  mode === "min"
+    ? (query = `https://www.ozon.ru/search/?from_global=true&sorting=${sortMethods[0]}&text=${productName}`)
+    : (query = `https://www.ozon.ru/search/?from_global=true&sorting=${sortMethods[1]}&text=${productName}`) &&
+      (mode = "max");
 
-  return fetch(queryAscPrice)
+  return fetch(query)
     .then((response) => response.text())
     .then((html) => {
       const parser = new DOMParser();
       const htmlDocument = parser.parseFromString(html, "text/html");
-      const cheapest = htmlDocument.documentElement.querySelector(
+      const extremum = htmlDocument.documentElement.querySelector(
         ".widget-search-result-container > div > div"
       );
 
-      let pricesSection = cheapest.querySelector(":scope > div > div");
-      let link = cheapest.querySelector(":scope > div > a");
+      let pricesSection = extremum.querySelector(":scope > div > div");
+      let link = extremum.querySelector(":scope > div > a");
       let name = link.querySelector(":scope > div > span");
 
       let partialPath = link.href;
-      let linkToCheapest = fullDomain(partialPath);
+      let linkToExtremum = fullDomain(partialPath);
 
       let prices = pricesSection.querySelector(":scope > div");
-      let priceOfCheapestWithSale =
+      let priceOfExtremumWithSale =
         prices.querySelectorAll(":scope > span")[0].innerHTML;
 
-      let priceOfCheapestWithoutSale = null;
+      let priceOfExtremumWithoutSale = null;
       try {
         // sometimes there is no sale at all, if that happens, we trigger a warning
-        priceOfCheapestWithoutSale =
+        priceOfExtremumWithoutSale =
           prices.querySelectorAll(":scope > span")[1].innerHTML;
       } catch (error) {
         console.warn(
-          `Could not get a price without sale (cheapest) for ${productName}`
+          `Could not get a price without sale (${mode}) for ${productName}`
         );
       }
 
-      let cheapestName = name.innerHTML;
+      let extremumName = name.innerHTML;
       return [
-        cheapestName,
-        priceOfCheapestWithSale,
-        priceOfCheapestWithoutSale,
-        linkToCheapest,
-      ];
-    });
-}
-
-async function findProductWithMaxPrice(productName) {
-  let queryDescPrice = `https://www.ozon.ru/search/?from_global=true&sorting=${sortMethods[1]}&text=${productName}`;
-  return fetch(queryDescPrice)
-    .then((response) => response.text())
-    .then((html) => {
-      console.log(html);
-      const parser = new DOMParser();
-      const htmlDocument = parser.parseFromString(html, "text/html");
-      const mostExpensive = htmlDocument.documentElement.querySelector(
-        ".widget-search-result-container > div > div"
-      );
-
-      let pricesSection = mostExpensive.querySelector(":scope > div > div");
-      let link = mostExpensive.querySelector(":scope > div > a");
-      let name = link.querySelector(":scope > div > span");
-
-      let partialPath = link.href;
-      let linkToMostExpensive = fullDomain(partialPath);
-
-      let prices = pricesSection.querySelector(":scope > div");
-      let priceOfMostExpensiveWithSale =
-        prices.querySelectorAll(":scope > span")[0].innerHTML;
-
-      let priceOfMostExpensiveWithoutSale = null;
-      try {
-        // sometimes there is no sale at all, if that happens, we trigger a warning
-        priceOfMostExpensiveWithoutSale =
-          prices.querySelectorAll(":scope > span")[1].innerHTML;
-      } catch (error) {
-        console.warn(
-          `Could not get a price without sale (most expensive) for ${productName}`
-        );
-      }
-
-      let mostExpensiveName = name.innerHTML;
-      return [
-        mostExpensiveName,
-        priceOfMostExpensiveWithSale,
-        priceOfMostExpensiveWithoutSale,
-        linkToMostExpensive,
+        extremumName,
+        priceOfExtremumWithSale,
+        priceOfExtremumWithoutSale,
+        linkToExtremum,
       ];
     });
 }
 
 async function findProductsWithMinMaxPrice(productName) {
   return Promise.all([
-    findProductWithMinPrice(productName),
-    findProductWithMaxPrice(productName),
+    findProductWithMinOrMaxPrice(productName, "min"),
+    findProductWithMinOrMaxPrice(productName, "max"),
   ]);
 }
 
