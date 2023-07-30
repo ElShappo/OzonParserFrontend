@@ -2,14 +2,67 @@
   <h4 class="text-center full-width text-weight-light">
     Choose the item from the list:
   </h4>
-  <div class="q-pa-md">
+  <div class="q-pa-md full-width">
     <q-table
       title="OZON marketplace"
       :rows="rows"
       :columns="columns"
       row-key="name"
+      style="width: 100%; height: 500px"
       v-if="show"
-    />
+    >
+      <template v-slot:body="props">
+        <q-tr :props="props">
+          <q-td key="name" :props="props">
+            {{ props.row.name }}
+          </q-td>
+          <q-td key="old min price" :props="props">
+            {{ props.row["old min price"] }}
+          </q-td>
+          <q-td key="old max price" :props="props">
+            {{ props.row["old max price"] }}
+          </q-td>
+          <q-td key="new min price" :props="props">
+            {{ props.row["new min price"] }}
+          </q-td>
+          <q-td key="new min price pn" :props="props">
+            <a
+              target="_blank"
+              :href="
+                cheapestProducts.find(
+                  (product) => product.name === props.row['new min price pn']
+                ).link
+              "
+              >{{ props.row["new min price pn"] }}</a
+            >
+          </q-td>
+          <q-td key="new max price" :props="props">
+            {{ props.row["new max price"] }}
+          </q-td>
+          <q-td key="new max price pn" :props="props">
+            <a
+              target="_blank"
+              :href="
+                mostExpensiveProducts.find(
+                  (product) => product.name === props.row['new max price pn']
+                ).link
+              "
+              >{{ props.row["new max price pn"] }}</a
+            >
+          </q-td>
+          <!-- <q-td key="calories" :props="props">
+            <q-badge color="green">
+              {{ props.row.calories }}
+            </q-badge>
+          </q-td>
+          <q-td key="fat" :props="props">
+            <q-badge color="purple">
+              {{ props.row.fat }}
+            </q-badge>
+          </q-td> -->
+        </q-tr>
+      </template>
+    </q-table>
   </div>
   <!-- <q-select
     filled
@@ -70,6 +123,9 @@ const productOldMaxPricesRef = ref(props.productNewMaxPrices); // new prices now
 
 const productNewMinPricesRef = ref([]);
 const productNewMaxPricesRef = ref([]);
+
+const cheapestProducts = ref([]);
+const mostExpensiveProducts = ref([]);
 
 // const cheapestName = ref("");
 // const priceOfCheapestWithSale = ref("");
@@ -153,12 +209,26 @@ onMounted(() => {
           linkToCheapest,
         ] = productWithMinPrice;
 
+        cheapestProducts.value.push({
+          name: cheapestName,
+          priceWithSale: priceOfCheapestWithSale,
+          priceWithoutSale: priceOfCheapestWithoutSale,
+          link: linkToCheapest,
+        });
+
         let [
           mostExpensiveName,
           priceOfMostExpensiveWithSale,
           priceOfMostExpensiveWithoutSale,
           linkToMostExpensive,
         ] = productWithMaxPrice;
+
+        mostExpensiveProducts.value.push({
+          name: mostExpensiveName,
+          priceWithSale: priceOfMostExpensiveWithSale,
+          priceWithoutSale: priceOfMostExpensiveWithoutSale,
+          link: linkToMostExpensive,
+        });
 
         // productNewMinPricesRef.value.push(priceOfCheapestWithSale.value);
         // productNewMaxPricesRef.value.push(priceOfMostExpensiveWithSale.value);
