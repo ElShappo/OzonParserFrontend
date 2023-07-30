@@ -7,7 +7,7 @@
       row-key="name"
       style="width: 100%; height: 600px"
       class="my-sticky-header-table"
-      v-if="show"
+      v-if="showTable"
     >
       <template v-slot:body="props">
         <q-tr :props="props">
@@ -48,16 +48,6 @@
               >{{ props.row["new max price pn"] }}</a
             >
           </q-td>
-          <!-- <q-td key="calories" :props="props">
-            <q-badge color="green">
-              {{ props.row.calories }}
-            </q-badge>
-          </q-td>
-          <q-td key="fat" :props="props">
-            <q-badge color="purple">
-              {{ props.row.fat }}
-            </q-badge>
-          </q-td> -->
         </q-tr>
       </template>
     </q-table>
@@ -72,8 +62,11 @@ const props = defineProps([
   "productNewMaxPrices",
 ]);
 
-const show = ref(false);
+const showTable = ref(false);
 
+// after sending request to a marketplace for each of the names specified in .xlsx table
+// you will end up having two lists: list of cheapest and a list of most expensive products
+// each product from each of these lists will have the structure as follows: {name, priceWithSale, priceWithoutSale, link}
 const cheapestProducts = ref([]);
 const mostExpensiveProducts = ref([]);
 
@@ -182,7 +175,7 @@ onMounted(() => {
       }
     );
   }
-  show.value = true;
+  showTable.value = true;
 });
 
 function fullDomain(partialPath) {
