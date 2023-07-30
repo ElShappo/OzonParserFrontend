@@ -187,10 +187,10 @@ onMounted(() => {
             "old max price": props.productNewMaxPrices[i], // new prices now become old
 
             "new min price": priceOfCheapestWithSale,
-            "new min price pn": cheapestName,
+            "new min price pn": cheapestName, // 'pn' stands for product name
 
             "new max price": priceOfMostExpensiveWithSale,
-            "new max price pn": mostExpensiveName,
+            "new max price pn": mostExpensiveName, // 'pn' stands for product name
           });
           ++i;
         }
@@ -225,9 +225,20 @@ async function findProductWithMinOrMaxPrice(productName, mode = "min") {
       const extremum = htmlDocument.documentElement.querySelector(
         ".widget-search-result-container > div > div"
       );
-
-      let pricesSection = extremum.querySelector(":scope > div > div");
-      let link = extremum.querySelector(":scope > div > a");
+      let pricesSection;
+      let link;
+      try {
+        pricesSection = extremum.querySelector(":scope > div > div");
+        link = extremum.querySelector(":scope > div > a");
+      } catch (error) {
+        console.error(
+          `Could not get pricesSection & link (${mode}) for ${productName}`
+        );
+        console.error(productName);
+        console.error(query);
+        console.error(html);
+        console.error(htmlDocument);
+      }
       let name = link.querySelector(":scope > div > span");
 
       let partialPath = link.href;
