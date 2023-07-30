@@ -8,9 +8,10 @@
       :rows="rows"
       :columns="columns"
       row-key="name"
+      v-if="show"
     />
   </div>
-  <q-select
+  <!-- <q-select
     filled
     v-model="model"
     use-input
@@ -50,7 +51,7 @@
         >
       </q-item-section>
     </q-item>
-  </q-list>
+  </q-list> -->
 </template>
 
 <script setup>
@@ -70,15 +71,15 @@ const productOldMaxPricesRef = ref(props.productNewMaxPrices); // new prices now
 const productNewMinPricesRef = ref([]);
 const productNewMaxPricesRef = ref([]);
 
-const cheapestName = ref("");
-const priceOfCheapestWithSale = ref("");
-const priceOfCheapestWithoutSale = ref("");
-const linkToCheapest = ref("");
+// const cheapestName = ref("");
+// const priceOfCheapestWithSale = ref("");
+// const priceOfCheapestWithoutSale = ref("");
+// const linkToCheapest = ref("");
 
-const mostExpensiveName = ref("");
-const priceOfMostExpensiveWithSale = ref("");
-const priceOfMostExpensiveWithoutSale = ref("");
-const linkToMostExpensive = ref("");
+// const mostExpensiveName = ref("");
+// const priceOfMostExpensiveWithSale = ref("");
+// const priceOfMostExpensiveWithoutSale = ref("");
+// const linkToMostExpensive = ref("");
 
 const sortMethods = ["ozon_card_price", "price_desc"];
 
@@ -113,10 +114,24 @@ const columns = [
     sortable: true,
   },
   {
+    name: "new min price pn",
+    align: "center",
+    label: "new min price pn",
+    field: "new min price pn",
+    sortable: true,
+  },
+  {
     name: "new max price",
     align: "center",
     label: "new max price",
     field: "new max price",
+    sortable: true,
+  },
+  {
+    name: "new max price pn",
+    align: "center",
+    label: "new max price pn",
+    field: "new max price pn",
     sortable: true,
   },
 ];
@@ -129,19 +144,44 @@ console.log(productNamesRef);
 onMounted(() => {
   let i = 0;
   for (let productName of props.productNames) {
-    findMinMaxPrice(productName).then(() => {
-      productNewMinPricesRef.value.push(priceOfCheapestWithSale.value);
-      productNewMaxPricesRef.value.push(priceOfMostExpensiveWithSale.value);
-      rows.value.push({
-        name: productName,
-        "old min price": productOldMinPricesRef.value[i],
-        "old max price": productOldMaxPricesRef.value[i],
-        "new min price": priceOfCheapestWithSale.value,
-        "new max price": priceOfMostExpensiveWithSale.value,
-      });
-      ++i;
-    });
+    findProductsWithMinMaxPrice(productName).then(
+      ([productWithMinPrice, productWithMaxPrice]) => {
+        let [
+          cheapestName,
+          priceOfCheapestWithSale,
+          priceOfCheapestWithoutSale,
+          linkToCheapest,
+        ] = productWithMinPrice;
+
+        let [
+          mostExpensiveName,
+          priceOfMostExpensiveWithSale,
+          priceOfMostExpensiveWithoutSale,
+          linkToMostExpensive,
+        ] = productWithMaxPrice;
+
+        // productNewMinPricesRef.value.push(priceOfCheapestWithSale.value);
+        // productNewMaxPricesRef.value.push(priceOfMostExpensiveWithSale.value);
+
+        rows.value.push({
+          name: productName,
+          "old min price": productOldMinPricesRef.value[i],
+          // "old min price pn": productOldMinPricesRef.value[i],
+
+          "old max price": productOldMaxPricesRef.value[i],
+          // "old max price pn": productOldMaxPricesRef.value[i],
+
+          "new min price": priceOfCheapestWithSale,
+          "new min price pn": cheapestName,
+
+          "new max price": priceOfMostExpensiveWithSale,
+          "new max price pn": mostExpensiveName,
+        });
+        ++i;
+      }
+    );
   }
+  show.value = true;
 });
 
 function filterFn(val, update) {
@@ -170,7 +210,7 @@ function fullDomain(partialPath) {
   return marketplaceDomain + improvedPartialPath;
 }
 
-async function findMinPrice(productName) {
+async function findProductWithMinPrice(productName) {
   let queryAscPrice = `https://www.ozon.ru/search/?from_global=true&sorting=${sortMethods[0]}&text=${productName}`;
 
   return fetch(queryAscPrice)
@@ -187,19 +227,34 @@ async function findMinPrice(productName) {
       let name = link.querySelector(":scope > div > span");
 
       let partialPath = link.href;
-      linkToCheapest.value = fullDomain(partialPath);
+      let linkToCheapest = fullDomain(partialPath);
 
       let prices = pricesSection.querySelector(":scope > div");
-      priceOfCheapestWithSale.value =
+      let priceOfCheapestWithSale =
         prices.querySelectorAll(":scope > span")[0].innerHTML;
-      priceOfCheapestWithoutSale.value =
-        prices.querySelectorAll(":scope > span")[1].innerHTML;
 
-      cheapestName.value = name.innerHTML;
+      let priceOfCheapestWithoutSale = null;
+      try {
+        // sometimes there is no sale at all, if that happens, we trigger a warning
+        priceOfCheapestWithoutSale =
+          prices.querySelectorAll(":scope > span")[1].innerHTML;
+      } catch (error) {
+        console.warn(
+          `Could not get a price without sale (cheapest) for ${productName}`
+        );
+      }
+
+      let cheapestName = name.innerHTML;
+      return [
+        cheapestName,
+        priceOfCheapestWithSale,
+        priceOfCheapestWithoutSale,
+        linkToCheapest,
+      ];
     });
 }
 
-async function findMaxPrice(productName) {
+async function findProductWithMaxPrice(productName) {
   let queryDescPrice = `https://www.ozon.ru/search/?from_global=true&sorting=${sortMethods[1]}&text=${productName}`;
   return fetch(queryDescPrice)
     .then((response) => response.text())
@@ -216,92 +271,110 @@ async function findMaxPrice(productName) {
       let name = link.querySelector(":scope > div > span");
 
       let partialPath = link.href;
-      linkToMostExpensive.value = fullDomain(partialPath);
+      let linkToMostExpensive = fullDomain(partialPath);
 
       let prices = pricesSection.querySelector(":scope > div");
-      priceOfMostExpensiveWithSale.value =
+      let priceOfMostExpensiveWithSale =
         prices.querySelectorAll(":scope > span")[0].innerHTML;
-      priceOfMostExpensiveWithoutSale.value =
-        prices.querySelectorAll(":scope > span")[1].innerHTML;
 
-      mostExpensiveName.value = name.innerHTML;
+      let priceOfMostExpensiveWithoutSale = null;
+      try {
+        // sometimes there is no sale at all, if that happens, we trigger a warning
+        priceOfMostExpensiveWithoutSale =
+          prices.querySelectorAll(":scope > span")[1].innerHTML;
+      } catch (error) {
+        console.warn(
+          `Could not get a price without sale (most expensive) for ${productName}`
+        );
+      }
+
+      let mostExpensiveName = name.innerHTML;
+      return [
+        mostExpensiveName,
+        priceOfMostExpensiveWithSale,
+        priceOfMostExpensiveWithoutSale,
+        linkToMostExpensive,
+      ];
     });
 }
 
-async function findMinMaxPrice(productName) {
-  return Promise.all([findMinPrice(productName), findMaxPrice(productName)]);
+async function findProductsWithMinMaxPrice(productName) {
+  return Promise.all([
+    findProductWithMinPrice(productName),
+    findProductWithMaxPrice(productName),
+  ]);
 }
 
-function handleUpdate(value, i) {
-  let queryAscPrice = `https://www.ozon.ru/search/?from_global=true&sorting=${sortMethods[0]}&text=${value}`;
-  let queryDescPrice = `https://www.ozon.ru/search/?from_global=true&sorting=${sortMethods[1]}&text=${value}`;
+// function handleUpdate(value, i) {
+//   let queryAscPrice = `https://www.ozon.ru/search/?from_global=true&sorting=${sortMethods[0]}&text=${value}`;
+//   let queryDescPrice = `https://www.ozon.ru/search/?from_global=true&sorting=${sortMethods[1]}&text=${value}`;
 
-  let dataAscPrice = fetch(queryAscPrice)
-    .then((response) => response.text())
-    .then((html) => {
-      const parser = new DOMParser();
-      const htmlDocument = parser.parseFromString(html, "text/html");
-      const cheapest = htmlDocument.documentElement.querySelector(
-        ".widget-search-result-container > div > div"
-      );
+//   let dataAscPrice = fetch(queryAscPrice)
+//     .then((response) => response.text())
+//     .then((html) => {
+//       const parser = new DOMParser();
+//       const htmlDocument = parser.parseFromString(html, "text/html");
+//       const cheapest = htmlDocument.documentElement.querySelector(
+//         ".widget-search-result-container > div > div"
+//       );
 
-      let pricesSection = cheapest.querySelector(":scope > div > div");
-      let link = cheapest.querySelector(":scope > div > a");
-      let name = link.querySelector(":scope > div > span");
+//       let pricesSection = cheapest.querySelector(":scope > div > div");
+//       let link = cheapest.querySelector(":scope > div > a");
+//       let name = link.querySelector(":scope > div > span");
 
-      let partialPath = link.href;
-      linkToCheapest.value = fullDomain(partialPath);
+//       let partialPath = link.href;
+//       linkToCheapest.value = fullDomain(partialPath);
 
-      let prices = pricesSection.querySelector(":scope > div");
-      priceOfCheapestWithSale.value =
-        prices.querySelectorAll(":scope > span")[0].innerHTML;
-      priceOfCheapestWithoutSale.value =
-        prices.querySelectorAll(":scope > span")[1].innerHTML;
+//       let prices = pricesSection.querySelector(":scope > div");
+//       priceOfCheapestWithSale.value =
+//         prices.querySelectorAll(":scope > span")[0].innerHTML;
+//       priceOfCheapestWithoutSale.value =
+//         prices.querySelectorAll(":scope > span")[1].innerHTML;
 
-      cheapestName.value = name.innerHTML;
-    })
-    .then(() => fetch(queryDescPrice))
-    .then((response) => response.text())
-    .then((html) => {
-      console.log(html);
-      const parser = new DOMParser();
-      const htmlDocument = parser.parseFromString(html, "text/html");
-      const mostExpensive = htmlDocument.documentElement.querySelector(
-        ".widget-search-result-container > div > div"
-      );
+//       cheapestName.value = name.innerHTML;
+//     })
+//     .then(() => fetch(queryDescPrice))
+//     .then((response) => response.text())
+//     .then((html) => {
+//       console.log(html);
+//       const parser = new DOMParser();
+//       const htmlDocument = parser.parseFromString(html, "text/html");
+//       const mostExpensive = htmlDocument.documentElement.querySelector(
+//         ".widget-search-result-container > div > div"
+//       );
 
-      let pricesSection = mostExpensive.querySelector(":scope > div > div");
-      let link = mostExpensive.querySelector(":scope > div > a");
-      let name = link.querySelector(":scope > div > span");
+//       let pricesSection = mostExpensive.querySelector(":scope > div > div");
+//       let link = mostExpensive.querySelector(":scope > div > a");
+//       let name = link.querySelector(":scope > div > span");
 
-      let partialPath = link.href;
-      linkToMostExpensive.value = fullDomain(partialPath);
+//       let partialPath = link.href;
+//       linkToMostExpensive.value = fullDomain(partialPath);
 
-      let prices = pricesSection.querySelector(":scope > div");
-      priceOfMostExpensiveWithSale.value =
-        prices.querySelectorAll(":scope > span")[0].innerHTML;
-      priceOfMostExpensiveWithoutSale.value =
-        prices.querySelectorAll(":scope > span")[1].innerHTML;
+//       let prices = pricesSection.querySelector(":scope > div");
+//       priceOfMostExpensiveWithSale.value =
+//         prices.querySelectorAll(":scope > span")[0].innerHTML;
+//       priceOfMostExpensiveWithoutSale.value =
+//         prices.querySelectorAll(":scope > span")[1].innerHTML;
 
-      mostExpensiveName.value = name.innerHTML;
+//       mostExpensiveName.value = name.innerHTML;
 
-      productNewMinPricesRef.value.push(priceOfCheapestWithSale.value);
-      productNewMaxPricesRef.value.push(priceOfMostExpensiveWithSale.value);
-      rows.value.push({
-        name: value,
-        "old min price": productOldMinPricesRef.value[i],
-        "old max price": productOldMaxPricesRef.value[i],
-        "new min price": priceOfCheapestWithSale.value,
-        "new max price": priceOfMostExpensiveWithSale.value,
-      });
-      ++i;
+//       productNewMinPricesRef.value.push(priceOfCheapestWithSale.value);
+//       productNewMaxPricesRef.value.push(priceOfMostExpensiveWithSale.value);
+//       rows.value.push({
+//         name: value,
+//         "old min price": productOldMinPricesRef.value[i],
+//         "old max price": productOldMaxPricesRef.value[i],
+//         "new min price": priceOfCheapestWithSale.value,
+//         "new max price": priceOfMostExpensiveWithSale.value,
+//       });
+//       ++i;
 
-      show.value = true;
+//       show.value = true;
 
-      console.log("test");
-      console.log(props.productNames);
-    });
-}
+//       // console.log("test");
+//       // console.log(props.productNames);
+//     });
+// }
 </script>
 
 <style>
