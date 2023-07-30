@@ -7,19 +7,19 @@
       @added="onFileAdd"
       class="q-mt-xl"
     />
-    <TablePage
+    <TableComponent
       :productNames="productNames"
       :productNewMinPrices="productNewMinPrices"
       :productNewMaxPrices="productNewMaxPrices"
       v-if="showTableComponent"
-    ></TablePage>
+    ></TableComponent>
   </q-page>
 </template>
 
 <script setup>
 import * as XLSX from "xlsx";
 import { ref } from "vue";
-import TablePage from "src/components/TablePage.vue";
+import TableComponent from "src/components/TableComponent.vue";
 
 const productNames = ref([]); // product names will be stored there after .xlsx file parse
 const productNewMinPrices = ref([]); // product New min prices will be stored there after .xlsx file parse (if present)

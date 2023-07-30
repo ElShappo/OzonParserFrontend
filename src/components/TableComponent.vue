@@ -51,13 +51,13 @@
         </q-tr>
       </template>
     </q-table>
-    <TableSkeletonPage v-else />
+    <TableSkeletonComponent v-else />
   </div>
 </template>
 
 <script setup>
 import * as XLSX from "xlsx";
-import TableSkeletonPage from "./TableSkeletonPage.vue";
+import TableSkeletonComponent from "./TableSkeletonComponent.vue";
 import { ref, defineProps, onMounted } from "vue";
 const props = defineProps([
   "productNames",
