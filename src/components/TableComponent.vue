@@ -13,18 +13,55 @@
         <q-tr :props="props">
           <q-td key="article number" :props="props">
             {{ props.row["article number"] }}
+            <span
+              class="text-italic text-grey-5"
+              v-if="
+                props.row['article number'] === null ||
+                props.row['article number'] === undefined
+              "
+              >{{ blankWord }}</span
+            >
           </q-td>
           <q-td key="name" :props="props">
             {{ props.row.name }}
+            <span
+              class="text-italic text-grey-5"
+              v-if="props.row.name === null || props.row.name === undefined"
+              >{{ blankWord }}</span
+            >
           </q-td>
           <q-td key="old min price" :props="props">
             {{ props.row["old min price"] }}
+            <span
+              class="text-italic text-grey-5"
+              v-if="
+                props.row['old min price'] === null ||
+                props.row['old min price'] === undefined
+              "
+              >{{ blankWord }}</span
+            >
           </q-td>
           <q-td key="old max price" :props="props">
             {{ props.row["old max price"] }}
+            <span
+              class="text-italic text-grey-5"
+              v-if="
+                props.row['old max price'] === null ||
+                props.row['old max price'] === undefined
+              "
+              >{{ blankWord }}</span
+            >
           </q-td>
           <q-td key="new min price" :props="props">
             {{ props.row["new min price"] }}
+            <span
+              class="text-italic text-grey-5"
+              v-if="
+                props.row['new min price'] === null ||
+                props.row['new min price'] === undefined
+              "
+              >{{ blankWord }}</span
+            >
           </q-td>
           <q-td key="new min price pn" :props="props">
             <a
@@ -36,9 +73,25 @@
               "
               >{{ props.row["new min price pn"] }}</a
             >
+            <span
+              class="text-italic text-grey-5"
+              v-if="
+                props.row['new min price pn'] === null ||
+                props.row['new min price pn'] === undefined
+              "
+              >{{ blankWord }}</span
+            >
           </q-td>
           <q-td key="new max price" :props="props">
             {{ props.row["new max price"] }}
+            <span
+              class="text-italic text-grey-5"
+              v-if="
+                props.row['new max price'] === null ||
+                props.row['new max price'] === undefined
+              "
+              >{{ blankWord }}</span
+            >
           </q-td>
           <q-td key="new max price pn" :props="props">
             <a
@@ -49,6 +102,14 @@
                 ).link
               "
               >{{ props.row["new max price pn"] }}</a
+            >
+            <span
+              class="text-italic text-grey-5"
+              v-if="
+                props.row['new max price pn'] === null ||
+                props.row['new max price pn'] === undefined
+              "
+              >{{ blankWord }}</span
             >
           </q-td>
         </q-tr>
@@ -79,6 +140,7 @@ const props = defineProps([
 const $q = useQuasar();
 
 const showTable = ref(false);
+const blankWord = ref("empty");
 
 // after sending request to a marketplace for each of the names specified in .xlsx table
 // you will end up having two lists: list of cheapest and a list of most expensive products

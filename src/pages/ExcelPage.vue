@@ -106,7 +106,7 @@ function onFileAdd(event) {
             productNewMaxPrices.value = productHeaderValues;
             break;
         }
-        console.log(productHeaderValues.value);
+        console.error(productHeaderValues);
       }
       showTableComponent.value = true;
     });
