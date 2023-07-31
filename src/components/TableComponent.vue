@@ -82,8 +82,6 @@ const showTable = ref(false);
 const cheapestProducts = ref([]);
 const mostExpensiveProducts = ref([]);
 
-const sortMethods = ["ozon_card_price", "price_desc"];
-
 const columns = [
   {
     name: "name",
@@ -210,7 +208,46 @@ function fullDomain(partialPath) {
   return marketplaceDomain + improvedPartialPath;
 }
 
-async function findProductWithMinOrMaxPrice(productName, mode = "min") {
+async function findProductWithMinOrMaxPriceWb(productName, mode = "min") {
+  const sortMethods = ["priceup", "pricedown"];
+
+  let query;
+  mode === "min"
+    ? (query = `https://www.wildberries.ru/catalog/0/search.aspx?sort=${sortMethods[0]}&search=${productName}`)
+    : (query = `https://www.wildberries.ru/catalog/0/search.aspx?&sort=${sortMethods[1]}&search=${productName}`) &&
+      (mode = "max");
+
+  return fetch(query)
+    .then((response) => response.text())
+    .then((html) => {
+      const parser = new DOMParser();
+      const htmlDocument = parser.parseFromString(html, "text/html");
+      const product = htmlDocument.documentElement.querySelector(
+        ".product-card-list > article > div > a"
+      );
+      return fetch(product.href); // to retrieve price and name we have to go to another url
+    })
+    .then((html) => {
+      const parser = new DOMParser();
+      const htmlDocument = parser.parseFromString(html, "text/html");
+
+      const name = htmlDocument.documentElement.querySelector(
+        ".product-page__header > h1"
+      ).innerHTML;
+      const priceWithSale = htmlDocument.documentElement.querySelector(
+        ".price-block__final-price"
+      ).innerHTML;
+      const priceWithoutSale = htmlDocument.documentElement.querySelector(
+        ".price-block__old-price"
+      ).innerHTML;
+
+      return [name, priceWithSale, priceWithoutSale];
+    });
+}
+
+async function findProductWithMinOrMaxPriceOzon(productName, mode = "min") {
+  const sortMethods = ["ozon_card_price", "price_desc"];
+
   let query;
   mode === "min"
     ? (query = `https://www.ozon.ru/search/?from_global=true&sorting=${sortMethods[0]}&text=${productName}`)
@@ -271,8 +308,8 @@ async function findProductWithMinOrMaxPrice(productName, mode = "min") {
 
 async function findProductsWithMinMaxPrice(productName) {
   return Promise.all([
-    findProductWithMinOrMaxPrice(productName, "min"),
-    findProductWithMinOrMaxPrice(productName, "max"),
+    findProductWithMinOrMaxPriceOzon(productName, "min"),
+    findProductWithMinOrMaxPriceOzon(productName, "max"),
   ]);
 }
 
