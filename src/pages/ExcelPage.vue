@@ -71,81 +71,43 @@ function onFileAdd(event) {
       const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
       console.log(rawData);
 
-      let columnArticleNumber = "Артикул";
-      let [columnArticleNumberRowIndex, columnArticleNumberColumnIndex] =
-        findCellAddressByContent(rawData, columnArticleNumber);
+      const columnHeaders = [
+        "Артикул",
+        "Наименование товара",
+        "Старая мин. цена",
+        "Старая макс. цена",
+      ];
 
-      console.log(columnArticleNumberRowIndex, columnArticleNumberColumnIndex);
+      for (let columnHeader of columnHeaders) {
+        let [headerRowIndex, headerColumnIndex] = findCellAddressByContent(
+          rawData,
+          columnHeader
+        );
 
-      productArticleNumbers.value = getAllBelowSpecified(
-        columnArticleNumberRowIndex,
-        columnArticleNumberColumnIndex,
-        rawData
-      ); // get all product names below the corresponding title
+        console.log(headerRowIndex, headerColumnIndex);
 
-      console.error(productArticleNumbers.value);
+        let productHeaderValues = getAllBelowSpecified(
+          headerRowIndex,
+          headerColumnIndex,
+          rawData
+        ); // get all values below the corresponding header
 
-      let columnName = "Наименование товара";
-      let [columnNameRowIndex, columnNameColumnIndex] =
-        findCellAddressByContent(rawData, columnName);
-
-      console.log(columnNameRowIndex, columnNameColumnIndex);
-
-      productNames.value = getAllBelowSpecified(
-        columnNameRowIndex,
-        columnNameColumnIndex,
-        rawData
-      ); // get all product names below the corresponding title
-
-      console.log(productNames.value);
-
-      productNames.value = productNames.value.filter(
-        (item) => item !== null && item !== undefined && item !== ""
-      ); // if there are empty cells, we get rid of them
-
-      console.log(productNames.value);
-
-      let columnNewMinPrice = "Старая мин. цена";
-      let [columnNewMinPriceRowIndex, columnNewMinPriceColumnIndex] =
-        findCellAddressByContent(rawData, columnNewMinPrice);
-
-      console.log(columnNewMinPriceRowIndex, columnNewMinPriceColumnIndex);
-
-      productNewMinPrices.value = getAllBelowSpecified(
-        columnNewMinPriceRowIndex,
-        columnNewMinPriceColumnIndex,
-        rawData
-      ); // get all product New min prices below the corresponding title
-
-      console.log(productNewMinPrices.value);
-
-      productNewMinPrices.value = productNewMinPrices.value.filter(
-        (item) => item !== null && item !== undefined && item !== ""
-      ); // if there are empty cells, we get rid of them
-
-      console.log(productNewMinPrices.value);
-
-      let columnNewMaxPrice = "Старая макс. цена";
-
-      let [columnNewMaxPriceRowIndex, columnNewMaxPriceColumnIndex] =
-        findCellAddressByContent(rawData, columnNewMaxPrice);
-
-      console.log(columnNewMaxPriceRowIndex, columnNewMaxPriceColumnIndex);
-
-      productNewMaxPrices.value = getAllBelowSpecified(
-        columnNewMaxPriceRowIndex,
-        columnNewMaxPriceColumnIndex,
-        rawData
-      ); // get all product New max prices below the corresponding title
-
-      console.log(productNewMaxPrices.value);
-
-      productNewMaxPrices.value = productNewMaxPrices.value.filter(
-        (item) => item !== null && item !== undefined && item !== ""
-      ); // if there are empty cells, we get rid of them
-
-      console.log(productNewMaxPrices.value);
-
+        switch (columnHeader) {
+          case "Артикул":
+            productArticleNumbers.value = productHeaderValues;
+            break;
+          case "Наименование товара":
+            productNames.value = productHeaderValues;
+            break;
+          case "Старая мин. цена":
+            productNewMinPrices.value = productHeaderValues;
+            break;
+          case "Старая макс. цена":
+            productNewMaxPrices.value = productHeaderValues;
+            break;
+        }
+        console.log(productHeaderValues.value);
+      }
       showTableComponent.value = true;
     });
 }
