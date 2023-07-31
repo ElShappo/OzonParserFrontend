@@ -8,6 +8,7 @@
       class="q-mt-xl"
     />
     <TableComponent
+      :productArticleNumbers="productArticleNumbers"
       :productNames="productNames"
       :productNewMinPrices="productNewMinPrices"
       :productNewMaxPrices="productNewMaxPrices"
@@ -21,6 +22,7 @@ import * as XLSX from "xlsx";
 import { ref } from "vue";
 import TableComponent from "src/components/TableComponent.vue";
 
+const productArticleNumbers = ref([]); // product article numbers will be stored there after .xlsx file parse
 const productNames = ref([]); // product names will be stored there after .xlsx file parse
 const productNewMinPrices = ref([]); // product New min prices will be stored there after .xlsx file parse (if present)
 const productNewMaxPrices = ref([]); // product New max prices will be stored there after .xlsx file parse (if present)
@@ -69,22 +71,25 @@ function onFileAdd(event) {
       const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
       console.log(rawData);
 
+      let columnArticleNumber = "Артикул";
+      let [columnArticleNumberRowIndex, columnArticleNumberColumnIndex] =
+        findCellAddressByContent(rawData, columnArticleNumber);
+
+      console.log(columnArticleNumberRowIndex, columnArticleNumberColumnIndex);
+
+      productArticleNumbers.value = getAllBelowSpecified(
+        columnArticleNumberRowIndex,
+        columnArticleNumberColumnIndex,
+        rawData
+      ); // get all product names below the corresponding title
+
+      console.error(productArticleNumbers.value);
+
       let columnName = "Наименование товара";
       let [columnNameRowIndex, columnNameColumnIndex] =
         findCellAddressByContent(rawData, columnName);
 
-      let columnNewMinPrice = "Старая мин. цена";
-      let columnNewMaxPrice = "Старая макс. цена";
-
-      let [columnNewMinPriceRowIndex, columnNewMinPriceColumnIndex] =
-        findCellAddressByContent(rawData, columnNewMinPrice);
-
-      let [columnNewMaxPriceRowIndex, columnNewMaxPriceColumnIndex] =
-        findCellAddressByContent(rawData, columnNewMaxPrice);
-
       console.log(columnNameRowIndex, columnNameColumnIndex);
-      console.log(columnNewMinPriceRowIndex, columnNewMinPriceColumnIndex);
-      console.log(columnNewMaxPriceRowIndex, columnNewMaxPriceColumnIndex);
 
       productNames.value = getAllBelowSpecified(
         columnNameRowIndex,
@@ -100,6 +105,12 @@ function onFileAdd(event) {
 
       console.log(productNames.value);
 
+      let columnNewMinPrice = "Старая мин. цена";
+      let [columnNewMinPriceRowIndex, columnNewMinPriceColumnIndex] =
+        findCellAddressByContent(rawData, columnNewMinPrice);
+
+      console.log(columnNewMinPriceRowIndex, columnNewMinPriceColumnIndex);
+
       productNewMinPrices.value = getAllBelowSpecified(
         columnNewMinPriceRowIndex,
         columnNewMinPriceColumnIndex,
@@ -113,6 +124,13 @@ function onFileAdd(event) {
       ); // if there are empty cells, we get rid of them
 
       console.log(productNewMinPrices.value);
+
+      let columnNewMaxPrice = "Старая макс. цена";
+
+      let [columnNewMaxPriceRowIndex, columnNewMaxPriceColumnIndex] =
+        findCellAddressByContent(rawData, columnNewMaxPrice);
+
+      console.log(columnNewMaxPriceRowIndex, columnNewMaxPriceColumnIndex);
 
       productNewMaxPrices.value = getAllBelowSpecified(
         columnNewMaxPriceRowIndex,

@@ -11,6 +11,9 @@
     >
       <template v-slot:body="props">
         <q-tr :props="props">
+          <q-td key="article number" :props="props">
+            {{ props.row["article number"] }}
+          </q-td>
           <q-td key="name" :props="props">
             {{ props.row.name }}
           </q-td>
@@ -68,6 +71,7 @@ import TableSkeletonComponent from "./TableSkeletonComponent.vue";
 import { useQuasar } from "quasar";
 import { ref, defineProps, onMounted } from "vue";
 const props = defineProps([
+  "productArticleNumbers",
   "productNames",
   "productNewMinPrices",
   "productNewMaxPrices",
@@ -84,12 +88,21 @@ const mostExpensiveProducts = ref([]);
 
 const columns = [
   {
+    name: "article number",
+    required: true,
+    label: "Article number",
+    align: "left",
+    field: "article number",
+    sortable: true,
+  },
+  {
     name: "name",
     required: true,
-    label: "Item name",
+    label: "item name",
     align: "left",
     field: (row) => row.name,
     format: (val) => `${val}`,
+    sortable: true,
   },
   {
     name: "old min price",
@@ -180,6 +193,7 @@ onMounted(() => {
           });
 
           rows.value.push({
+            "article number": props.productArticleNumbers[i],
             name: productName,
             "old min price": props.productNewMinPrices[i], // new prices now become old
             "old max price": props.productNewMaxPrices[i], // new prices now become old
