@@ -1,12 +1,20 @@
 <template>
   <q-page class="column justify-start items-center">
-    <q-uploader
+    <q-file
+      v-model="file"
+      label="Pick one file"
+      filled
+      style="max-width: 300px"
+      @update:model-value="onFileAdd"
+    />
+    <!-- <q-uploader
       label="Upload your xlsx file"
       max-files="1"
       accept=".xlsx"
-      @added="onFileAdd"
+      url="http://localhost:5000/read"
       class="q-mt-xl"
-    />
+      field-name="file"
+    /> -->
     <TableComponent
       :productArticleNumbers="productArticleNumbers"
       :productNames="productNames"
@@ -21,6 +29,8 @@
 import * as XLSX from "xlsx";
 import { ref } from "vue";
 import TableComponent from "src/components/TableComponent.vue";
+
+const file = ref(null);
 
 const productArticleNumbers = ref([]); // product article numbers will be stored there after .xlsx file parse
 const productNames = ref([]); // product names will be stored there after .xlsx file parse
@@ -55,20 +65,17 @@ function getAllBelowSpecified(rowIndex, columnIndex, rawData) {
   return cells;
 }
 
-function onFileAdd(event) {
-  let filename = event[0].name;
-  fetch(filename)
-    .then((res) => {
-      console.log("hey!");
-      return res.arrayBuffer();
-    })
-    .then((res) => {
-      console.log("file:", res);
-      const workbook = XLSX.read(res);
-      console.log(workbook);
-
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+function onFileAdd(file) {
+  console.log(file);
+  const formData = new FormData();
+  formData.append("file", file);
+  fetch("http://localhost:5000/read", {
+    method: "POST",
+    body: formData,
+  })
+    .then((res) => fetch("http://localhost:5000/"))
+    .then((res) => res.json())
+    .then((rawData) => {
       console.log(rawData);
 
       const columnHeaders = [
@@ -107,8 +114,8 @@ function onFileAdd(event) {
             break;
         }
         console.error(productHeaderValues);
+        showTableComponent.value = true;
       }
-      showTableComponent.value = true;
     });
 }
 </script>

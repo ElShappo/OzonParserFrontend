@@ -222,55 +222,61 @@ onMounted(() => {
     timeout: 0,
   });
 
-  for (let productName of props.productNames) {
-    promises.push(
-      findProductsWithMinMaxPrice(productName).then(
-        ([productWithMinPrice, productWithMaxPrice]) => {
-          let [
-            cheapestName,
-            priceOfCheapestWithSale,
-            priceOfCheapestWithoutSale,
-            linkToCheapest,
-          ] = productWithMinPrice;
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-          cheapestProducts.value.push({
-            name: cheapestName,
-            priceWithSale: priceOfCheapestWithSale,
-            priceWithoutSale: priceOfCheapestWithoutSale,
-            link: linkToCheapest,
-          });
+  (async function () {
+    for (let productName of props.productNames) {
+      // await delay(1000);
+      promises.push(
+        findProductsWithMinMaxPrice(productName).then(
+          ([productWithMinPrice, productWithMaxPrice]) => {
+            let [
+              cheapestName,
+              priceOfCheapestWithSale,
+              priceOfCheapestWithoutSale,
+              linkToCheapest,
+            ] = productWithMinPrice;
 
-          let [
-            mostExpensiveName,
-            priceOfMostExpensiveWithSale,
-            priceOfMostExpensiveWithoutSale,
-            linkToMostExpensive,
-          ] = productWithMaxPrice;
+            cheapestProducts.value.push({
+              name: cheapestName,
+              priceWithSale: priceOfCheapestWithSale,
+              priceWithoutSale: priceOfCheapestWithoutSale,
+              link: linkToCheapest,
+            });
 
-          mostExpensiveProducts.value.push({
-            name: mostExpensiveName,
-            priceWithSale: priceOfMostExpensiveWithSale,
-            priceWithoutSale: priceOfMostExpensiveWithoutSale,
-            link: linkToMostExpensive,
-          });
+            let [
+              mostExpensiveName,
+              priceOfMostExpensiveWithSale,
+              priceOfMostExpensiveWithoutSale,
+              linkToMostExpensive,
+            ] = productWithMaxPrice;
 
-          rows.value.push({
-            "article number": props.productArticleNumbers[i],
-            name: productName,
-            "old min price": props.productNewMinPrices[i], // new prices now become old
-            "old max price": props.productNewMaxPrices[i], // new prices now become old
+            mostExpensiveProducts.value.push({
+              name: mostExpensiveName,
+              priceWithSale: priceOfMostExpensiveWithSale,
+              priceWithoutSale: priceOfMostExpensiveWithoutSale,
+              link: linkToMostExpensive,
+            });
 
-            "new min price": priceOfCheapestWithSale,
-            "new min price pn": cheapestName, // 'pn' stands for product name
+            rows.value.push({
+              "article number": props.productArticleNumbers[i],
+              name: productName,
+              "old min price": props.productNewMinPrices[i], // new prices now become old
+              "old max price": props.productNewMaxPrices[i], // new prices now become old
 
-            "new max price": priceOfMostExpensiveWithSale,
-            "new max price pn": mostExpensiveName, // 'pn' stands for product name
-          });
-          ++i;
-        }
-      )
-    );
-  }
+              "new min price": priceOfCheapestWithSale,
+              "new min price pn": cheapestName, // 'pn' stands for product name
+
+              "new max price": priceOfMostExpensiveWithSale,
+              "new max price pn": mostExpensiveName, // 'pn' stands for product name
+            });
+            ++i;
+          }
+        )
+      );
+    }
+  })();
+
   Promise.all(promises).then(() => {
     tableLoadingNotify();
     showTable.value = true;
@@ -285,39 +291,46 @@ function fullDomain(partialPath) {
 }
 
 async function findProductWithMinOrMaxPriceWb(productName, mode = "min") {
+  // wb stands for wildberries
   const sortMethods = ["priceup", "pricedown"];
 
-  let query;
+  let url = new URL("https://search.wb.ru/exactmatch/ru/common/v4/search");
+
+  // url.searchParams.set("TestGroup", "no_test");
+  // url.searchParams.set("TestID", "no_test");
+  // url.searchParams.set("appType", "1");
+  url.searchParams.set("curr", "rub");
+  url.searchParams.set("dest", "-1257786");
+  url.searchParams.set("query", productName);
+  url.searchParams.set(
+    "regions",
+    "80,38,83,4,64,33,68,70,30,40,86,75,69,22,1,31,66,110,48,71,114"
+  );
+  url.searchParams.set("resultset", "catalog");
+  url.searchParams.set("spp", "0");
+  url.searchParams.set("suppressSpellcheck", "false");
+  url.searchParams.set("uclusters", "0");
+
+  // let query;
   mode === "min"
-    ? (query = `https://www.wildberries.ru/catalog/0/search.aspx?sort=${sortMethods[0]}&search=${productName}`)
-    : (query = `https://www.wildberries.ru/catalog/0/search.aspx?&sort=${sortMethods[1]}&search=${productName}`) &&
-      (mode = "max");
+    ? url.searchParams.set("sort", sortMethods[0])
+    : url.searchParams.set("sort", sortMethods[1]) && (mode = "max");
 
-  return fetch(query)
-    .then((response) => response.text())
-    .then((html) => {
-      const parser = new DOMParser();
-      const htmlDocument = parser.parseFromString(html, "text/html");
-      const product = htmlDocument.documentElement.querySelector(
-        ".product-card-list > article > div > a"
-      );
-      return fetch(product.href); // to retrieve price and name we have to go to another url
-    })
-    .then((html) => {
-      const parser = new DOMParser();
-      const htmlDocument = parser.parseFromString(html, "text/html");
-
-      const name = htmlDocument.documentElement.querySelector(
-        ".product-page__header > h1"
-      ).innerHTML;
-      const priceWithSale = htmlDocument.documentElement.querySelector(
-        ".price-block__final-price"
-      ).innerHTML;
-      const priceWithoutSale = htmlDocument.documentElement.querySelector(
-        ".price-block__old-price"
-      ).innerHTML;
+  return fetch(url)
+    .then((response) => response.json())
+    .then((json) => {
+      let priceWithSale = json.data.products[0].salePriceU;
+      let priceWithoutSale = json.data.products[0].priceU;
+      let name = json.data.products[0].name;
 
       return [name, priceWithSale, priceWithoutSale];
+    })
+    .catch((e) => {
+      console.error(
+        `Error occurred on product = ${productName}, mode = ${mode} `
+      );
+      console.error(e);
+      console.error(url.href);
     });
 }
 
@@ -386,6 +399,9 @@ async function findProductsWithMinMaxPrice(productName) {
   return Promise.all([
     findProductWithMinOrMaxPriceOzon(productName, "min"),
     findProductWithMinOrMaxPriceOzon(productName, "max"),
+
+    // findProductWithMinOrMaxPriceWb(productName, "min"),
+    // findProductWithMinOrMaxPriceWb(productName, "max"),
   ]);
 }
 
