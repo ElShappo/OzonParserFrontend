@@ -337,13 +337,16 @@ async function findProductWithMinOrMaxPriceWb(productName, mode = "min") {
 async function findProductWithMinOrMaxPriceOzon(productName, mode = "min") {
   const sortMethods = ["ozon_card_price", "price_desc"];
 
-  let query;
-  mode === "min"
-    ? (query = `https://www.ozon.ru/search/?from_global=true&sorting=${sortMethods[0]}&text=${productName}`)
-    : (query = `https://www.ozon.ru/search/?from_global=true&sorting=${sortMethods[1]}&text=${productName}`) &&
-      (mode = "max");
+  let url = new URL("https://www.ozon.ru/search");
 
-  return fetch(query)
+  url.searchParams.set("from_global", "true");
+  url.searchParams.set("text", `${productName}`);
+
+  mode === "min"
+    ? url.searchParams.set("sorting", sortMethods[0])
+    : url.searchParams.set("sorting", sortMethods[1]) && (mode = "max");
+
+  return fetch(url)
     .then((response) => response.text())
     .then((html) => {
       const parser = new DOMParser();
@@ -361,9 +364,10 @@ async function findProductWithMinOrMaxPriceOzon(productName, mode = "min") {
           `Could not get pricesSection & link (${mode}) for ${productName}`
         );
         console.error(productName);
-        console.error(query);
+        console.error(url);
         console.error(html);
         console.error(htmlDocument);
+        return [null, null, null, null];
       }
       let name = link.querySelector(":scope > div > span");
 
