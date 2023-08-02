@@ -1,12 +1,23 @@
 <template>
   <q-page class="column justify-start items-center">
     <q-file
-      v-model="file"
+      bottom-slots
+      counter
+      v-model="fileModel"
       label="Pick one file"
       filled
       style="max-width: 300px"
       @update:model-value="onFileAdd"
-    />
+      class="q-mt-xl"
+    >
+      <template v-slot:append>
+        <q-icon
+          name="close"
+          @click.stop.prevent="file = null"
+          class="cursor-pointer"
+        />
+      </template>
+    </q-file>
     <!-- <q-uploader
       label="Upload your xlsx file"
       max-files="1"
@@ -26,11 +37,10 @@
 </template>
 
 <script setup>
-import * as XLSX from "xlsx";
 import { ref } from "vue";
 import TableComponent from "src/components/TableComponent.vue";
 
-const file = ref(null);
+const fileModel = ref(null);
 
 const productArticleNumbers = ref([]); // product article numbers will be stored there after .xlsx file parse
 const productNames = ref([]); // product names will be stored there after .xlsx file parse
@@ -66,6 +76,7 @@ function getAllBelowSpecified(rowIndex, columnIndex, rawData) {
 }
 
 function onFileAdd(file) {
+  showTableComponent.value = false;
   console.log(file);
   const formData = new FormData();
   formData.append("file", file);
@@ -91,13 +102,17 @@ function onFileAdd(file) {
           columnHeader
         );
 
-        console.log(headerRowIndex, headerColumnIndex);
+        console.error(headerRowIndex, headerColumnIndex);
 
         let productHeaderValues = getAllBelowSpecified(
           headerRowIndex,
           headerColumnIndex,
           rawData
         ); // get all values below the corresponding header
+
+        productHeaderValues = productHeaderValues.filter(
+          (item) => item !== null && item !== undefined && item !== ""
+        ); // if there are empty cells, we get rid of them
 
         switch (columnHeader) {
           case "Артикул":
