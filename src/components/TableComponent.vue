@@ -213,6 +213,9 @@ const columns = [
 const rows = ref([]);
 
 onMounted(() => {
+  console.error("onmounted hook");
+  console.error(props.productArticleNumbers);
+  console.error(props.productNames);
   let i = 0;
   let promises = [];
 
@@ -260,7 +263,7 @@ onMounted(() => {
 
             rows.value.push({
               "article number": props.productArticleNumbers[i],
-              name: productName,
+              name: props.productNames[i],
               "old min price": props.productNewMinPrices[i], // new prices now become old
               "old max price": props.productNewMaxPrices[i], // new prices now become old
 
