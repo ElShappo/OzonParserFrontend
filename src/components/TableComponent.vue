@@ -227,58 +227,103 @@ onMounted(() => {
 
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  (async function () {
-    for (let productName of props.productNames) {
-      // await delay(1000);
-      promises.push(
-        findProductsWithMinMaxPrice(productName).then(
-          ([productWithMinPrice, productWithMaxPrice]) => {
-            let [
-              cheapestName,
-              priceOfCheapestWithSale,
-              priceOfCheapestWithoutSale,
-              linkToCheapest,
-            ] = productWithMinPrice;
+  promises = props.productNames.map(async (productName, index) => {
+    return findProductsWithMinMaxPrice(productName).then(
+      ([productWithMinPrice, productWithMaxPrice]) => {
+        let [
+          cheapestName,
+          priceOfCheapestWithSale,
+          priceOfCheapestWithoutSale,
+          linkToCheapest,
+        ] = productWithMinPrice;
 
-            cheapestProducts.value.push({
-              name: cheapestName,
-              priceWithSale: priceOfCheapestWithSale,
-              priceWithoutSale: priceOfCheapestWithoutSale,
-              link: linkToCheapest,
-            });
+        cheapestProducts.value.push({
+          name: cheapestName,
+          priceWithSale: priceOfCheapestWithSale,
+          priceWithoutSale: priceOfCheapestWithoutSale,
+          link: linkToCheapest,
+        });
 
-            let [
-              mostExpensiveName,
-              priceOfMostExpensiveWithSale,
-              priceOfMostExpensiveWithoutSale,
-              linkToMostExpensive,
-            ] = productWithMaxPrice;
+        let [
+          mostExpensiveName,
+          priceOfMostExpensiveWithSale,
+          priceOfMostExpensiveWithoutSale,
+          linkToMostExpensive,
+        ] = productWithMaxPrice;
 
-            mostExpensiveProducts.value.push({
-              name: mostExpensiveName,
-              priceWithSale: priceOfMostExpensiveWithSale,
-              priceWithoutSale: priceOfMostExpensiveWithoutSale,
-              link: linkToMostExpensive,
-            });
+        mostExpensiveProducts.value.push({
+          name: mostExpensiveName,
+          priceWithSale: priceOfMostExpensiveWithSale,
+          priceWithoutSale: priceOfMostExpensiveWithoutSale,
+          link: linkToMostExpensive,
+        });
 
-            rows.value.push({
-              "article number": props.productArticleNumbers[i],
-              name: props.productNames[i],
-              "old min price": props.productNewMinPrices[i], // new prices now become old
-              "old max price": props.productNewMaxPrices[i], // new prices now become old
+        rows.value.push({
+          "article number": props.productArticleNumbers[index],
+          name: props.productNames[index],
+          "old min price": props.productNewMinPrices[index], // new prices now become old
+          "old max price": props.productNewMaxPrices[index], // new prices now become old
 
-              "new min price": priceOfCheapestWithSale,
-              "new min price pn": cheapestName, // 'pn' stands for product name
+          "new min price": priceOfCheapestWithSale,
+          "new min price pn": cheapestName, // 'pn' stands for product name
 
-              "new max price": priceOfMostExpensiveWithSale,
-              "new max price pn": mostExpensiveName, // 'pn' stands for product name
-            });
-            ++i;
-          }
-        )
-      );
-    }
-  })();
+          "new max price": priceOfMostExpensiveWithSale,
+          "new max price pn": mostExpensiveName, // 'pn' stands for product name
+        });
+      }
+    );
+  });
+
+  // for (let productName of props.productNames.slice(0, 3)) {
+  //   // await delay(1000);
+  //   promises.push(
+  //     findProductsWithMinMaxPrice(productName).then(
+  //       ([productWithMinPrice, productWithMaxPrice]) => {
+  //         let [
+  //           cheapestName,
+  //           priceOfCheapestWithSale,
+  //           priceOfCheapestWithoutSale,
+  //           linkToCheapest,
+  //         ] = productWithMinPrice;
+
+  //         cheapestProducts.value.push({
+  //           name: cheapestName,
+  //           priceWithSale: priceOfCheapestWithSale,
+  //           priceWithoutSale: priceOfCheapestWithoutSale,
+  //           link: linkToCheapest,
+  //         });
+
+  //         let [
+  //           mostExpensiveName,
+  //           priceOfMostExpensiveWithSale,
+  //           priceOfMostExpensiveWithoutSale,
+  //           linkToMostExpensive,
+  //         ] = productWithMaxPrice;
+
+  //         mostExpensiveProducts.value.push({
+  //           name: mostExpensiveName,
+  //           priceWithSale: priceOfMostExpensiveWithSale,
+  //           priceWithoutSale: priceOfMostExpensiveWithoutSale,
+  //           link: linkToMostExpensive,
+  //         });
+
+  //         rows.value.push({
+  //           "article number": props.productArticleNumbers[i],
+  //           name: props.productNames[i],
+  //           "old min price": props.productNewMinPrices[i], // new prices now become old
+  //           "old max price": props.productNewMaxPrices[i], // new prices now become old
+
+  //           "new min price": priceOfCheapestWithSale,
+  //           "new min price pn": cheapestName, // 'pn' stands for product name
+
+  //           "new max price": priceOfMostExpensiveWithSale,
+  //           "new max price pn": mostExpensiveName, // 'pn' stands for product name
+  //         });
+  //         ++i;
+  //       }
+  //     )
+  //   );
+  // }
 
   Promise.all(promises).then(() => {
     tableLoadingNotify();
