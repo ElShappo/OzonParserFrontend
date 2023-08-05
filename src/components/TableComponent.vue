@@ -112,6 +112,36 @@
               >{{ blankWord }}</span
             >
           </q-td>
+          <q-td key="default price" :props="props">
+            {{ props.row["default price"] }}
+            <span
+              class="text-italic text-grey-5"
+              v-if="
+                props.row['default price'] === null ||
+                props.row['default price'] === undefined
+              "
+              >{{ blankWord }}</span
+            >
+          </q-td>
+          <q-td key="default price pn" :props="props">
+            <a
+              target="_blank"
+              :href="
+                defaultProducts.find(
+                  (product) => product.name === props.row['default price pn']
+                ).link
+              "
+              >{{ props.row["default price pn"] }}</a
+            >
+            <span
+              class="text-italic text-grey-5"
+              v-if="
+                props.row['default price pn'] === null ||
+                props.row['default price pn'] === undefined
+              "
+              >{{ blankWord }}</span
+            >
+          </q-td>
         </q-tr>
       </template>
     </q-table>
@@ -147,6 +177,7 @@ const blankWord = ref("empty");
 // each product from each of these lists will have the structure as follows: {name, priceWithSale, priceWithoutSale, link}
 const cheapestProducts = ref([]);
 const mostExpensiveProducts = ref([]);
+const defaultProducts = ref([]);
 
 const columns = [
   {
@@ -208,6 +239,20 @@ const columns = [
     field: "new max price pn",
     sortable: true,
   },
+  {
+    name: "default price",
+    align: "center",
+    label: "default price",
+    field: "default price",
+    sortable: true,
+  },
+  {
+    name: "default price pn",
+    align: "center",
+    label: "default price pn",
+    field: "default price pn",
+    sortable: true,
+  },
 ];
 
 const rows = ref([]);
@@ -225,11 +270,11 @@ onMounted(() => {
     timeout: 0,
   });
 
-  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  // const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   promises = props.productNames.map(async (productName, index) => {
     return findProductsWithMinMaxPrice(productName).then(
-      ([productWithMinPrice, productWithMaxPrice]) => {
+      ([productWithMinPrice, productWithMaxPrice, productDefault]) => {
         let [
           cheapestName,
           priceOfCheapestWithSale,
@@ -258,6 +303,23 @@ onMounted(() => {
           link: linkToMostExpensive,
         });
 
+        let [
+          defaultName,
+          priceOfDefaultWithSale,
+          priceOfDefaultWithoutSale,
+          linkToDefault,
+        ] = productDefault;
+
+        console.error("HEY!");
+        console.error(defaultName);
+
+        defaultProducts.value.push({
+          name: defaultName,
+          priceWithSale: priceOfDefaultWithSale,
+          priceWithoutSale: priceOfDefaultWithoutSale,
+          link: linkToDefault,
+        });
+
         rows.value.push({
           "article number": props.productArticleNumbers[index],
           name: props.productNames[index],
@@ -269,61 +331,13 @@ onMounted(() => {
 
           "new max price": priceOfMostExpensiveWithSale,
           "new max price pn": mostExpensiveName, // 'pn' stands for product name
+
+          "default price": priceOfDefaultWithSale,
+          "default price pn": defaultName,
         });
       }
     );
   });
-
-  // for (let productName of props.productNames.slice(0, 3)) {
-  //   // await delay(1000);
-  //   promises.push(
-  //     findProductsWithMinMaxPrice(productName).then(
-  //       ([productWithMinPrice, productWithMaxPrice]) => {
-  //         let [
-  //           cheapestName,
-  //           priceOfCheapestWithSale,
-  //           priceOfCheapestWithoutSale,
-  //           linkToCheapest,
-  //         ] = productWithMinPrice;
-
-  //         cheapestProducts.value.push({
-  //           name: cheapestName,
-  //           priceWithSale: priceOfCheapestWithSale,
-  //           priceWithoutSale: priceOfCheapestWithoutSale,
-  //           link: linkToCheapest,
-  //         });
-
-  //         let [
-  //           mostExpensiveName,
-  //           priceOfMostExpensiveWithSale,
-  //           priceOfMostExpensiveWithoutSale,
-  //           linkToMostExpensive,
-  //         ] = productWithMaxPrice;
-
-  //         mostExpensiveProducts.value.push({
-  //           name: mostExpensiveName,
-  //           priceWithSale: priceOfMostExpensiveWithSale,
-  //           priceWithoutSale: priceOfMostExpensiveWithoutSale,
-  //           link: linkToMostExpensive,
-  //         });
-
-  //         rows.value.push({
-  //           "article number": props.productArticleNumbers[i],
-  //           name: props.productNames[i],
-  //           "old min price": props.productNewMinPrices[i], // new prices now become old
-  //           "old max price": props.productNewMaxPrices[i], // new prices now become old
-
-  //           "new min price": priceOfCheapestWithSale,
-  //           "new min price pn": cheapestName, // 'pn' stands for product name
-
-  //           "new max price": priceOfMostExpensiveWithSale,
-  //           "new max price pn": mostExpensiveName, // 'pn' stands for product name
-  //         });
-  //         ++i;
-  //       }
-  //     )
-  //   );
-  // }
 
   Promise.all(promises).then(() => {
     tableLoadingNotify();
@@ -338,7 +352,7 @@ function fullDomain(partialPath) {
   return marketplaceDomain + improvedPartialPath;
 }
 
-async function findProductWithMinOrMaxPriceWb(productName, mode = "min") {
+async function findProductWithMinOrMaxPriceWb(productName, mode = "default") {
   // wb stands for wildberries
   const sortMethods = ["priceup", "pricedown"];
 
@@ -382,17 +396,25 @@ async function findProductWithMinOrMaxPriceWb(productName, mode = "min") {
     });
 }
 
-async function findProductWithMinOrMaxPriceOzon(productName, mode = "min") {
-  const sortMethods = ["ozon_card_price", "price_desc"];
+async function findProductWithMinOrMaxPriceOzon(productName, mode = "default") {
+  const sortMethods = ["ozon_card_price", "price_desc", ""];
 
   let url = new URL("https://www.ozon.ru/search");
 
   url.searchParams.set("from_global", "true");
   url.searchParams.set("text", `${productName}`);
 
-  mode === "min"
-    ? url.searchParams.set("sorting", sortMethods[0])
-    : url.searchParams.set("sorting", sortMethods[1]) && (mode = "max");
+  switch (mode) {
+    case "min":
+      url.searchParams.set("sorting", sortMethods[0]);
+      break;
+    case "max":
+      url.searchParams.set("sorting", sortMethods[1]);
+      break;
+    default: // i.e. sort by popularity
+      mode = "default";
+      break;
+  }
 
   return fetch(url)
     .then((response) => response.text())
@@ -451,6 +473,7 @@ async function findProductsWithMinMaxPrice(productName) {
   return Promise.all([
     findProductWithMinOrMaxPriceOzon(productName, "min"),
     findProductWithMinOrMaxPriceOzon(productName, "max"),
+    findProductWithMinOrMaxPriceOzon(productName, "default"),
 
     // findProductWithMinOrMaxPriceWb(productName, "min"),
     // findProductWithMinOrMaxPriceWb(productName, "max"),
