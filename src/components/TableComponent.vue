@@ -64,15 +64,9 @@
             >
           </q-td>
           <q-td key="new min price pn" :props="props">
-            <a
-              target="_blank"
-              :href="
-                cheapestProducts.find(
-                  (product) => product.name === props.row['new min price pn']
-                ).link
-              "
-              >{{ props.row["new min price pn"] }}</a
-            >
+            <a target="_blank" :href="cheapestProducts[props.rowIndex].link">{{
+              props.row["new min price pn"]
+            }}</a>
             <span
               class="text-italic text-grey-5"
               v-if="
@@ -96,11 +90,7 @@
           <q-td key="new max price pn" :props="props">
             <a
               target="_blank"
-              :href="
-                mostExpensiveProducts.find(
-                  (product) => product.name === props.row['new max price pn']
-                ).link
-              "
+              :href="mostExpensiveProducts[props.rowIndex].link"
               >{{ props.row["new max price pn"] }}</a
             >
             <span
@@ -124,15 +114,9 @@
             >
           </q-td>
           <q-td key="default price pn" :props="props">
-            <a
-              target="_blank"
-              :href="
-                defaultProducts.find(
-                  (product) => product.name === props.row['default price pn']
-                ).link
-              "
-              >{{ props.row["default price pn"] }}</a
-            >
+            <a target="_blank" :href="defaultProducts[props.rowIndex].link">{{
+              props.row["default price pn"]
+            }}</a>
             <span
               class="text-italic text-grey-5"
               v-if="
@@ -258,11 +242,10 @@ const columns = [
 const rows = ref([]);
 
 onMounted(() => {
-  console.error("onmounted hook");
-  console.error(props.productArticleNumbers);
-  console.error(props.productNames);
+  // console.error("onmounted hook");
+  // console.error(props.productArticleNumbers);
+  // console.error(props.productNames);
   let i = 0;
-  let promises = [];
 
   const tableLoadingNotify = $q.notify({
     spinner: true,
@@ -272,74 +255,74 @@ onMounted(() => {
 
   // const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  promises = props.productNames.map(async (productName, index) => {
-    return findProductsWithMinMaxPrice(productName).then(
-      ([productWithMinPrice, productWithMaxPrice, productDefault]) => {
-        let [
-          cheapestName,
-          priceOfCheapestWithSale,
-          priceOfCheapestWithoutSale,
-          linkToCheapest,
-        ] = productWithMinPrice;
+  Promise.all(
+    props.productNames.map(async (productName, index) => {
+      return findProductsWithMinMaxPrice(productName).then(
+        ([productWithMinPrice, productWithMaxPrice, productDefault]) => {
+          let [
+            cheapestName,
+            priceOfCheapestWithSale,
+            priceOfCheapestWithoutSale,
+            linkToCheapest,
+          ] = productWithMinPrice;
 
-        cheapestProducts.value.push({
-          name: cheapestName,
-          priceWithSale: priceOfCheapestWithSale,
-          priceWithoutSale: priceOfCheapestWithoutSale,
-          link: linkToCheapest,
-        });
+          cheapestProducts.value.push({
+            name: cheapestName,
+            priceWithSale: priceOfCheapestWithSale,
+            priceWithoutSale: priceOfCheapestWithoutSale,
+            link: linkToCheapest,
+          });
 
-        let [
-          mostExpensiveName,
-          priceOfMostExpensiveWithSale,
-          priceOfMostExpensiveWithoutSale,
-          linkToMostExpensive,
-        ] = productWithMaxPrice;
+          let [
+            mostExpensiveName,
+            priceOfMostExpensiveWithSale,
+            priceOfMostExpensiveWithoutSale,
+            linkToMostExpensive,
+          ] = productWithMaxPrice;
 
-        mostExpensiveProducts.value.push({
-          name: mostExpensiveName,
-          priceWithSale: priceOfMostExpensiveWithSale,
-          priceWithoutSale: priceOfMostExpensiveWithoutSale,
-          link: linkToMostExpensive,
-        });
+          mostExpensiveProducts.value.push({
+            name: mostExpensiveName,
+            priceWithSale: priceOfMostExpensiveWithSale,
+            priceWithoutSale: priceOfMostExpensiveWithoutSale,
+            link: linkToMostExpensive,
+          });
 
-        let [
-          defaultName,
-          priceOfDefaultWithSale,
-          priceOfDefaultWithoutSale,
-          linkToDefault,
-        ] = productDefault;
+          let [
+            defaultName,
+            priceOfDefaultWithSale,
+            priceOfDefaultWithoutSale,
+            linkToDefault,
+          ] = productDefault;
 
-        console.error("HEY!");
-        console.error(defaultName);
+          // console.error("HEY!");
+          // console.error(defaultName);
 
-        defaultProducts.value.push({
-          name: defaultName,
-          priceWithSale: priceOfDefaultWithSale,
-          priceWithoutSale: priceOfDefaultWithoutSale,
-          link: linkToDefault,
-        });
+          defaultProducts.value.push({
+            name: defaultName,
+            priceWithSale: priceOfDefaultWithSale,
+            priceWithoutSale: priceOfDefaultWithoutSale,
+            link: linkToDefault,
+          });
 
-        rows.value.push({
-          "article number": props.productArticleNumbers[index],
-          name: props.productNames[index],
-          "old min price": props.productNewMinPrices[index], // new prices now become old
-          "old max price": props.productNewMaxPrices[index], // new prices now become old
+          rows.value.push({
+            "article number": props.productArticleNumbers[index],
+            name: props.productNames[index],
+            "old min price": props.productNewMinPrices[index], // new prices now become old
+            "old max price": props.productNewMaxPrices[index], // new prices now become old
 
-          "new min price": priceOfCheapestWithSale,
-          "new min price pn": cheapestName, // 'pn' stands for product name
+            "new min price": priceOfCheapestWithSale,
+            "new min price pn": cheapestName, // 'pn' stands for product name
 
-          "new max price": priceOfMostExpensiveWithSale,
-          "new max price pn": mostExpensiveName, // 'pn' stands for product name
+            "new max price": priceOfMostExpensiveWithSale,
+            "new max price pn": mostExpensiveName, // 'pn' stands for product name
 
-          "default price": priceOfDefaultWithSale,
-          "default price pn": defaultName,
-        });
-      }
-    );
-  });
-
-  Promise.all(promises).then(() => {
+            "default price": priceOfDefaultWithSale,
+            "default price pn": defaultName,
+          });
+        }
+      );
+    })
+  ).then(() => {
     tableLoadingNotify();
     showTable.value = true;
   });
@@ -418,6 +401,10 @@ async function findProductWithMinOrMaxPriceOzon(productName, mode = "default") {
 
   return fetch(url)
     .then((response) => response.text())
+    .catch((e) => {
+      console.error(`Error occurred when trying to fetch ${url}`);
+      console.error(e);
+    })
     .then((html) => {
       const parser = new DOMParser();
       const htmlDocument = parser.parseFromString(html, "text/html");
