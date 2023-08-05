@@ -8,6 +8,7 @@
 
     <TableSkeletonComponent v-else></TableSkeletonComponent>
   </div>
+
   <ExportExcelComponent
     :rows="rows"
     :columns="columns"
@@ -21,7 +22,6 @@ import { useQuasar } from "quasar";
 import TableComponent from "./TableComponent.vue";
 import TableSkeletonComponent from "./TableSkeletonComponent.vue";
 import ExportExcelComponent from "./ExportExcelComponent.vue";
-// import columns from "../tableColumns";
 
 const props = defineProps([
   "productArticleNumbers",
@@ -132,13 +132,6 @@ const columns = ref([
 
 const rows = ref([]);
 
-// after sending request to a marketplace for each of the names specified in .xlsx table
-// you will end up having three lists: list of cheapest, list of most expensive products, list of default (i.e. most popular) products
-// each product from each of these lists will have the structure as follows: {name, priceWithSale, priceWithoutSale, link}
-const cheapestProducts = ref([]);
-const mostExpensiveProducts = ref([]);
-const defaultProducts = ref([]);
-
 onMounted(() => {
   $q.loading.show({
     message: "Table is being loaded, please wait...",
@@ -158,13 +151,6 @@ onMounted(() => {
             linkToCheapest,
           ] = productWithMinPrice;
 
-          cheapestProducts.value.push({
-            name: cheapestName,
-            priceWithSale: priceOfCheapestWithSale,
-            priceWithoutSale: priceOfCheapestWithoutSale,
-            link: linkToCheapest,
-          });
-
           let [
             mostExpensiveName,
             priceOfMostExpensiveWithSale,
@@ -172,26 +158,12 @@ onMounted(() => {
             linkToMostExpensive,
           ] = productWithMaxPrice;
 
-          mostExpensiveProducts.value.push({
-            name: mostExpensiveName,
-            priceWithSale: priceOfMostExpensiveWithSale,
-            priceWithoutSale: priceOfMostExpensiveWithoutSale,
-            link: linkToMostExpensive,
-          });
-
           let [
             defaultName,
             priceOfDefaultWithSale,
             priceOfDefaultWithoutSale,
             linkToDefault,
           ] = productDefault;
-
-          defaultProducts.value.push({
-            name: defaultName,
-            priceWithSale: priceOfDefaultWithSale,
-            priceWithoutSale: priceOfDefaultWithoutSale,
-            link: linkToDefault,
-          });
 
           rows.value.push({
             "article number": props.productArticleNumbers[index],
