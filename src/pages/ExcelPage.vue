@@ -18,19 +18,19 @@
         />
       </template>
     </q-file>
-    <TableComponent
+    <GetTableDataComponent
       :productArticleNumbers="productArticleNumbers"
       :productNames="productNames"
       :productNewMinPrices="productNewMinPrices"
       :productNewMaxPrices="productNewMaxPrices"
       v-if="showTableComponent"
-    ></TableComponent>
+    ></GetTableDataComponent>
   </q-page>
 </template>
 
 <script setup>
 import { ref } from "vue";
-import TableComponent from "src/components/TableComponent.vue";
+import GetTableDataComponent from "src/components/GetTableDataComponent.vue";
 
 const fileModel = ref(null);
 
