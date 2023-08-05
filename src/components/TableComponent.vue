@@ -242,11 +242,6 @@ const columns = [
 const rows = ref([]);
 
 onMounted(() => {
-  // console.error("onmounted hook");
-  // console.error(props.productArticleNumbers);
-  // console.error(props.productNames);
-  let i = 0;
-
   const tableLoadingNotify = $q.notify({
     spinner: true,
     message: "Table is loading...",
@@ -293,9 +288,6 @@ onMounted(() => {
             priceOfDefaultWithoutSale,
             linkToDefault,
           ] = productDefault;
-
-          // console.error("HEY!");
-          // console.error(defaultName);
 
           defaultProducts.value.push({
             name: defaultName,

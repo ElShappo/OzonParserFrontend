@@ -18,14 +18,6 @@
         />
       </template>
     </q-file>
-    <!-- <q-uploader
-      label="Upload your xlsx file"
-      max-files="1"
-      accept=".xlsx"
-      url="http://localhost:5000/read"
-      class="q-mt-xl"
-      field-name="file"
-    /> -->
     <TableComponent
       :productArticleNumbers="productArticleNumbers"
       :productNames="productNames"
