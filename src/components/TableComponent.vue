@@ -242,10 +242,9 @@ const columns = [
 const rows = ref([]);
 
 onMounted(() => {
-  const tableLoadingNotify = $q.notify({
-    spinner: true,
-    message: "Table is loading...",
-    timeout: 0,
+  $q.loading.show({
+    message: "Table is being loaded, please wait...",
+    boxClass: "text-h5 text-weight-light",
   });
 
   // const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -315,7 +314,7 @@ onMounted(() => {
       );
     })
   ).then(() => {
-    tableLoadingNotify();
+    $q.loading.hide();
     showTable.value = true;
   });
 });
