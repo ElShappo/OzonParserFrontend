@@ -166,7 +166,7 @@ onMounted(() => {
           ] = productDefault;
 
           rows.value.push({
-            "article number": props.productArticleNumbers[index],
+            "article number": String(props.productArticleNumbers[index]),
             name: props.productNames[index],
             "old min price": props.productNewMinPrices[index], // new prices now become old
             "old max price": props.productNewMaxPrices[index], // new prices now become old
