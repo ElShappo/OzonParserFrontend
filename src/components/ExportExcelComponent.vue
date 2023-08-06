@@ -71,14 +71,34 @@ function exportTable() {
   let worksheet = XLSX.utils.aoa_to_sheet(aoa); // 'aoa' stands for array of arrays
   XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
+  console.warn(worksheet);
+
   let columnStyles = [];
   for (let columnName of columnsSlice) {
     columnStyles.push({
       wch: getMaxColumnWidth(rowsWithoutLinks, columnName, 10),
     });
   }
-
   worksheet["!cols"] = columnStyles;
+
+  let index = 2;
+  for (let row of props.rows) {
+    let linkToCheapest = row["new min price pl"];
+    let linkToMostExpensive = row["new max price pl"];
+    let linkToDefault = row["default price pl"];
+
+    if (worksheet[`F${index}`]) {
+      worksheet[`F${index}`].l = { Target: linkToCheapest };
+    }
+    if (worksheet[`H${index}`]) {
+      worksheet[`H${index}`].l = { Target: linkToMostExpensive };
+    }
+    if (worksheet[`J${index}`]) {
+      worksheet[`J${index}`].l = { Target: linkToDefault };
+    }
+
+    ++index;
+  }
 
   XLSX.writeFile(workbook, "test1.xlsx");
 }
