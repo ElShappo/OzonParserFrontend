@@ -14,8 +14,45 @@ import * as XLSX from "xlsx";
 const props = defineProps(["rows", "columns"]);
 
 function exportTable() {
-  let columnsSlice = props.columns.map((column) => column.name);
-  let rowsSlice = props.rows.map((row) => Object.values(row));
+  console.warn(props.rows);
+  console.warn(props.columns);
+
+  let columnsWithoutLinks = props.columns.filter(
+    (column) => !column.name.includes("pl")
+  );
+
+  let rowsWithoutLinks = props.rows.map((row) => {
+    let newRow = {};
+    for (let key in row) {
+      if (!key.includes("pl")) {
+        newRow[key] = row[key];
+      }
+    }
+    return newRow;
+  });
+
+  let columnsWithLinks = props.columns.filter((column) =>
+    column.name.includes("pl")
+  );
+
+  let rowsWithLinks = props.rows.map((row) => {
+    let newRow = {};
+    for (let key in row) {
+      if (key.includes("pl")) {
+        newRow[key] = row[key];
+      }
+    }
+    return newRow;
+  });
+
+  console.warn(columnsWithoutLinks);
+  console.warn(rowsWithoutLinks);
+
+  console.warn(columnsWithLinks);
+  console.warn(rowsWithLinks);
+
+  let columnsSlice = columnsWithoutLinks.map((column) => column.name);
+  let rowsSlice = rowsWithoutLinks.map((row) => Object.values(row));
 
   let aoa = rowsSlice.slice();
   aoa.unshift(columnsSlice);
