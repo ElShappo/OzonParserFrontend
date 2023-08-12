@@ -2,11 +2,7 @@
   <div class="q-pa-md q-pt-xl full-width">
     <TableComponent
       :rows="rows"
-      :columns="
-        Object.keys(rows[0]).map((item) => {
-          return { name: item, label: item, field: item };
-        })
-      "
+      :columns="columns"
       v-if="showTable"
     ></TableComponent>
 
@@ -21,7 +17,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useQuasar } from "quasar";
 import TableComponent from "./TableComponent.vue";
 import TableSkeletonComponent from "./TableSkeletonComponent.vue";
@@ -38,104 +34,17 @@ const props = defineProps([
 const $q = useQuasar();
 const showTable = ref(false);
 
-const columns = ref([
-  {
-    name: "article number",
-    required: true,
-    label: "Article number",
-    align: "left",
-    field: "article number",
-    sortable: true,
-  },
-  {
-    name: "name",
-    required: true,
-    label: "item name",
-    align: "left",
-    field: (row) => row.name,
-    format: (val) => `${val}`,
-    sortable: true,
-  },
-  {
-    name: "old min price",
-    align: "center",
-    label: "old min price",
-    field: "old min price",
-    sortable: true,
-  },
-  {
-    name: "old max price",
-    align: "center",
-    label: "old max price",
-    field: "old max price",
-    sortable: true,
-  },
-  {
-    name: "new min price",
-    align: "center",
-    label: "new min price",
-    field: "new min price",
-    sortable: true,
-  },
-  {
-    name: "new min price pn",
-    align: "center",
-    label: "new min price pn",
-    field: "new min price pn",
-    sortable: true,
-  },
-  {
-    name: "new min price pl",
-    align: "center",
-    label: "new min price pl",
-    field: "new min price pl",
-    sortable: true,
-  },
-  {
-    name: "new max price",
-    align: "center",
-    label: "new max price",
-    field: "new max price",
-    sortable: true,
-  },
-  {
-    name: "new max price pn",
-    align: "center",
-    label: "new max price pn",
-    field: "new max price pn",
-    sortable: true,
-  },
-  {
-    name: "new max price pl",
-    align: "center",
-    label: "new max price pl",
-    field: "new max price pl",
-    sortable: true,
-  },
-  {
-    name: "default price",
-    align: "center",
-    label: "default price",
-    field: "default price",
-    sortable: true,
-  },
-  {
-    name: "default price pn",
-    align: "center",
-    label: "default price pn",
-    field: "default price pn",
-    sortable: true,
-  },
-  {
-    name: "default price pl",
-    align: "center",
-    label: "default price pl",
-    field: "default price pl",
-    sortable: true,
-  },
-]);
-
 const rows = ref([]);
+
+// here we deduce 'columns' from 'rows' ('rows' will be filled later with objects, whose keys will become columns)
+const columns = computed(() => {
+  if (rows.value.length === 0) {
+    return null;
+  }
+  return Object.keys(rows.value[0]).map((item) => {
+    return { name: item, label: item, field: item };
+  });
+});
 
 onMounted(() => {
   $q.loading.show({
@@ -186,7 +95,7 @@ onMounted(() => {
           ] = productWithMinPriceWb;
 
           rows.value.push({
-            "article number": String(props.productArticleNumbers[index]),
+            articleNumber: String(props.productArticleNumbers[index]),
             name: props.productNames[index],
             "old min price": props.productNewMinPrices[index], // new prices now become old
             "old max price": props.productNewMaxPrices[index], // new prices now become old
