@@ -25,12 +25,7 @@ import TableComponent from "./TableComponent.vue";
 import TableSkeletonComponent from "./TableSkeletonComponent.vue";
 import ExportExcelComponent from "./ExportExcelComponent.vue";
 
-const props = defineProps([
-  "productArticleNumbers",
-  "productNames",
-  "productNewMinPrices",
-  "productNewMaxPrices",
-]);
+const props = defineProps(["productArticleNumbers", "productNames"]);
 
 const $q = useQuasar();
 const showTable = ref(false);
@@ -65,7 +60,7 @@ onMounted(() => {
   // const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   Promise.all(
-    props.productNames.map(async (productName, index) => {
+    props.productNames.slice(0, 4).map(async (productName, index) => {
       return findProductsWithMinMaxPrice(productName).then(
         ([
           productWithMinPriceOzon,
@@ -121,8 +116,6 @@ onMounted(() => {
           rows.value.push({
             articleNumber: String(props.productArticleNumbers[index]),
             name: props.productNames[index],
-            oldMinPrice: props.productNewMinPrices[index], // new prices now become old
-            oldMaxPrice: props.productNewMaxPrices[index], // new prices now become old
 
             newMinPriceOzon: priceOfCheapestWithSaleOzon,
             newMinPricePnOzon: cheapestNameOzon, // 'pn' stands for product name

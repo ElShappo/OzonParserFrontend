@@ -21,8 +21,6 @@
     <GetTableDataComponent
       :productArticleNumbers="productArticleNumbers"
       :productNames="productNames"
-      :productNewMinPrices="productNewMinPrices"
-      :productNewMaxPrices="productNewMaxPrices"
       v-if="showTableComponent"
     ></GetTableDataComponent>
   </q-page>
@@ -36,8 +34,6 @@ const fileModel = ref(null);
 
 const productArticleNumbers = ref([]); // product article numbers will be stored there after .xlsx file parse
 const productNames = ref([]); // product names will be stored there after .xlsx file parse
-const productNewMinPrices = ref([]); // product New min prices will be stored there after .xlsx file parse (if present)
-const productNewMaxPrices = ref([]); // product New max prices will be stored there after .xlsx file parse (if present)
 
 const showTableComponent = ref(false); // whether to show table with data (defaults to 'false' before .xlsx file parse)
 
@@ -112,12 +108,6 @@ function onFileAdd(file) {
             break;
           case "Наименование товара":
             productNames.value = productHeaderValues;
-            break;
-          case "Старая мин. цена":
-            productNewMinPrices.value = productHeaderValues;
-            break;
-          case "Старая макс. цена":
-            productNewMaxPrices.value = productHeaderValues;
             break;
         }
         console.error(productHeaderValues);
