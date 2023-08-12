@@ -11,7 +11,7 @@
 import { defineProps } from "vue";
 import * as XLSX from "xlsx";
 
-const props = defineProps(["rows", "columns"]);
+const props = defineProps(["rows", "columns", "visibleColumns"]);
 
 function getMaxColumnWidth(rows, columnName, defaultValue = 10) {
   return rows.reduce(

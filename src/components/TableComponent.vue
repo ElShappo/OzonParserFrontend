@@ -3,35 +3,123 @@
     title="OZON marketplace"
     :rows="props.rows"
     :columns="props.columns"
-    :visible-columns="
-      props.columns
-        .filter((column) => !column.name.includes('pl'))
-        .map((item) => item.name)
-    "
+    :visible-columns="props.visibleColumns"
     row-key="name"
+    separator="cell"
     style="width: 100%; height: 600px"
     class="my-sticky-header-table"
   >
-    <!-- <template v-slot:body-cell-["new min price pn ozon"]="props">
+    <template v-slot:body-cell="props">
       <q-td :props="props">
-        <div>
-          <q-badge color="purple" :label="props.value" />
+        <div v-if="props.value !== null && props.value !== undefined">
+          {{ props.value }}
         </div>
-        <div class="my-table-details">
-          {{ props.row.details }}
+        <div class="text-italic text-grey-5" v-else>
+          {{ blankWord }}
         </div>
       </q-td>
-    </template> -->
+    </template>
+
+    <template v-slot:body-cell-newMinPricePnOzon="props">
+      <q-td :props="props">
+        <a
+          target="_blank"
+          :href="props.row['newMinPricePlOzon']"
+          v-if="
+            props.row['newMinPricePnOzon'] !== null &&
+            props.row['newMinPricePnOzon'] !== undefined
+          "
+          >{{ props.row["newMinPricePnOzon"] }}</a
+        >
+        <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
+      </q-td>
+    </template>
+
+    <template v-slot:body-cell-newMinPricePnWb="props">
+      <q-td :props="props">
+        <a
+          target="_blank"
+          :href="props.row['newMinPricePlWb']"
+          v-if="
+            props.row['newMinPricePnWb'] !== null &&
+            props.row['newMinPricePnWb'] !== undefined
+          "
+          >{{ props.row["newMinPricePnWb"] }}</a
+        >
+        <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
+      </q-td>
+    </template>
+
+    <template v-slot:body-cell-newMaxPricePnOzon="props">
+      <q-td :props="props">
+        <a
+          target="_blank"
+          :href="props.row['newMaxPricePlOzon']"
+          v-if="
+            props.row['newMaxPricePnOzon'] !== null &&
+            props.row['newMaxPricePnOzon'] !== undefined
+          "
+          >{{ props.row["newMaxPricePnOzon"] }}</a
+        >
+        <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
+      </q-td>
+    </template>
+
+    <template v-slot:body-cell-newMaxPricePnWb="props">
+      <q-td :props="props">
+        <a
+          target="_blank"
+          :href="props.row['newMaxPricePlWb']"
+          v-if="
+            props.row['newMaxPricePnWb'] !== null &&
+            props.row['newMaxPricePnWb'] !== undefined
+          "
+          >{{ props.row["newMaxPricePnWb"] }}</a
+        >
+        <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
+      </q-td>
+    </template>
+
+    <template v-slot:body-cell-defaultPricePnOzon="props">
+      <q-td :props="props">
+        <a
+          target="_blank"
+          :href="props.row['defaultPricePlOzon']"
+          v-if="
+            props.row['defaultPricePnOzon'] !== null &&
+            props.row['defaultPricePnOzon'] !== undefined
+          "
+          >{{ props.row["defaultPricePnOzon"] }}</a
+        >
+        <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
+      </q-td>
+    </template>
+
+    <template v-slot:body-cell-defaultPricePnWb="props">
+      <q-td :props="props">
+        <a
+          target="_blank"
+          :href="props.row['defaultPricePlWb']"
+          v-if="
+            props.row['defaultPricePnWb'] !== null &&
+            props.row['defaultPricePnWb'] !== undefined
+          "
+          >{{ props.row["defaultPricePnWb"] }}</a
+        >
+        <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
+      </q-td>
+    </template>
   </q-table>
 </template>
 
 <script setup>
 import { ref, defineProps } from "vue";
-const props = defineProps(["rows", "columns"]);
+const props = defineProps(["rows", "columns", "visibleColumns"]);
 const blankWord = ref("empty");
-console.error(props.columns);
-console.error(props.columns.filter((column) => !column.name.includes("pl")));
+
 console.error(props.rows);
+console.error(props.columns);
+console.error(props.visibleColumns);
 </script>
 
 <style>

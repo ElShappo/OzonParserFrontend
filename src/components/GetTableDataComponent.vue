@@ -3,6 +3,7 @@
     <TableComponent
       :rows="rows"
       :columns="columns"
+      :visibleColumns="visibleColumns"
       v-if="showTable"
     ></TableComponent>
 
@@ -12,6 +13,7 @@
   <ExportExcelComponent
     :rows="rows"
     :columns="columns"
+    :visibleColumns="visibleColumns"
     v-if="showTable"
   ></ExportExcelComponent>
 </template>
@@ -22,7 +24,6 @@ import { useQuasar } from "quasar";
 import TableComponent from "./TableComponent.vue";
 import TableSkeletonComponent from "./TableSkeletonComponent.vue";
 import ExportExcelComponent from "./ExportExcelComponent.vue";
-// import puppeteer from "puppeteer";
 
 const props = defineProps([
   "productArticleNumbers",
@@ -42,8 +43,17 @@ const columns = computed(() => {
     return null;
   }
   return Object.keys(rows.value[0]).map((item) => {
-    return { name: item, label: item, field: item };
+    return { name: item, label: item, field: item, align: "center" };
   });
+});
+
+// here we deduce which columns we want to show
+// typically we decide to show all columns except for those containing 'pl' in their names
+// (i.e. we do not store a link to a product as a separate column)
+const visibleColumns = computed(() => {
+  return columns.value
+    .filter((column) => !column.name.includes("Pl"))
+    .map((item) => item.name);
 });
 
 onMounted(() => {
@@ -55,7 +65,7 @@ onMounted(() => {
   // const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   Promise.all(
-    props.productNames.slice(0, 4).map(async (productName, index) => {
+    props.productNames.map(async (productName, index) => {
       return findProductsWithMinMaxPrice(productName).then(
         ([
           productWithMinPriceOzon,
@@ -94,27 +104,49 @@ onMounted(() => {
             linkToCheapestWb,
           ] = productWithMinPriceWb;
 
+          let [
+            mostExpensiveNameWb,
+            priceOfMostExpensiveWithSaleWb,
+            priceOfMostExpensiveWithoutSaleWb,
+            linkToMostExpensiveWb,
+          ] = productWithMaxPriceWb;
+
+          let [
+            defaultNameWb,
+            priceOfDefaultWithSaleWb,
+            priceOfDefaultWithoutSaleWb,
+            linkToDefaultWb,
+          ] = productDefaultWb;
+
           rows.value.push({
             articleNumber: String(props.productArticleNumbers[index]),
             name: props.productNames[index],
-            "old min price": props.productNewMinPrices[index], // new prices now become old
-            "old max price": props.productNewMaxPrices[index], // new prices now become old
+            oldMinPrice: props.productNewMinPrices[index], // new prices now become old
+            oldMaxPrice: props.productNewMaxPrices[index], // new prices now become old
 
-            "new min price ozon": priceOfCheapestWithSaleOzon,
-            "new min price pn ozon": cheapestNameOzon, // 'pn' stands for product name
-            "new min price pl ozon": linkToCheapestOzon, // 'pl' stands for product link
+            newMinPriceOzon: priceOfCheapestWithSaleOzon,
+            newMinPricePnOzon: cheapestNameOzon, // 'pn' stands for product name
+            newMinPricePlOzon: linkToCheapestOzon, // 'pl' stands for product link
 
-            "new min price wb": priceOfCheapestWithSaleWb,
-            "new min price pn wb": cheapestNameWb, // 'pn' stands for product name
-            "new min price pl wb": linkToCheapestWb, // 'pl' stands for product link
+            newMinPriceWb: priceOfCheapestWithSaleWb,
+            newMinPricePnWb: cheapestNameWb, // 'pn' stands for product name
+            newMinPricePlWb: linkToCheapestWb, // 'pl' stands for product link
 
-            "new max price": priceOfMostExpensiveWithSaleOzon,
-            "new max price pn": mostExpensiveNameOzon, // 'pn' stands for product name
-            "new max price pl": linkToMostExpensiveOzon, // 'pl' stands for product link
+            newMaxPriceOzon: priceOfMostExpensiveWithSaleOzon,
+            newMaxPricePnOzon: mostExpensiveNameOzon, // 'pn' stands for product name
+            newMaxPricePlOzon: linkToMostExpensiveOzon, // 'pl' stands for product link
 
-            "default price": priceOfDefaultWithSaleOzon,
-            "default price pn": defaultNameOzon, // 'pn' stands for product name
-            "default price pl": linkToDefaultOzon, // 'pl' stands for product link
+            newMaxPriceWb: priceOfMostExpensiveWithSaleWb,
+            newMaxPricePnWb: mostExpensiveNameWb, // 'pn' stands for product name
+            newMaxPricePlWb: linkToMostExpensiveWb, // 'pl' stands for product link
+
+            defaultPriceOzon: priceOfDefaultWithSaleOzon,
+            defaultPricePnOzon: defaultNameOzon, // 'pn' stands for product name
+            defaultPricePlOzon: linkToDefaultOzon, // 'pl' stands for product link
+
+            defaultPriceWb: priceOfDefaultWithSaleWb,
+            defaultPricePnWb: defaultNameWb, // 'pn' stands for product name
+            defaultPricePlWb: linkToDefaultWb, // 'pl' stands for product link
           });
         }
       );
@@ -267,8 +299,8 @@ async function findProductsWithMinMaxPrice(productName) {
     findProductWithMinOrMaxPriceOzon(productName, "default"),
 
     findProductWithMinOrMaxPriceWb(productName, "min"),
-    // findProductWithMinOrMaxPriceWb(productName, "max"),
-    // findProductWithMinOrMaxPriceWb(productName, "default"),
+    findProductWithMinOrMaxPriceWb(productName, "max"),
+    findProductWithMinOrMaxPriceWb(productName, "default"),
   ]);
 }
 </script>
