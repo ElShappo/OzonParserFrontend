@@ -2,7 +2,11 @@
   <div class="q-pa-md q-pt-xl full-width">
     <TableComponent
       :rows="rows"
-      :columns="columns"
+      :columns="
+        Object.keys(rows[0]).map((item) => {
+          return { name: item, label: item, field: item };
+        })
+      "
       v-if="showTable"
     ></TableComponent>
 
@@ -22,6 +26,7 @@ import { useQuasar } from "quasar";
 import TableComponent from "./TableComponent.vue";
 import TableSkeletonComponent from "./TableSkeletonComponent.vue";
 import ExportExcelComponent from "./ExportExcelComponent.vue";
+// import puppeteer from "puppeteer";
 
 const props = defineProps([
   "productArticleNumbers",
@@ -141,29 +146,44 @@ onMounted(() => {
   // const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   Promise.all(
-    props.productNames.map(async (productName, index) => {
+    props.productNames.slice(0, 4).map(async (productName, index) => {
       return findProductsWithMinMaxPrice(productName).then(
-        ([productWithMinPrice, productWithMaxPrice, productDefault]) => {
+        ([
+          productWithMinPriceOzon,
+          productWithMaxPriceOzon,
+          productDefaultOzon,
+
+          productWithMinPriceWb,
+          productWithMaxPriceWb,
+          productDefaultWb,
+        ]) => {
           let [
-            cheapestName,
-            priceOfCheapestWithSale,
-            priceOfCheapestWithoutSale,
-            linkToCheapest,
-          ] = productWithMinPrice;
+            cheapestNameOzon,
+            priceOfCheapestWithSaleOzon,
+            priceOfCheapestWithoutSaleOzon,
+            linkToCheapestOzon,
+          ] = productWithMinPriceOzon;
 
           let [
-            mostExpensiveName,
-            priceOfMostExpensiveWithSale,
-            priceOfMostExpensiveWithoutSale,
-            linkToMostExpensive,
-          ] = productWithMaxPrice;
+            mostExpensiveNameOzon,
+            priceOfMostExpensiveWithSaleOzon,
+            priceOfMostExpensiveWithoutSaleOzon,
+            linkToMostExpensiveOzon,
+          ] = productWithMaxPriceOzon;
 
           let [
-            defaultName,
-            priceOfDefaultWithSale,
-            priceOfDefaultWithoutSale,
-            linkToDefault,
-          ] = productDefault;
+            defaultNameOzon,
+            priceOfDefaultWithSaleOzon,
+            priceOfDefaultWithoutSaleOzon,
+            linkToDefaultOzon,
+          ] = productDefaultOzon;
+
+          let [
+            cheapestNameWb,
+            priceOfCheapestWithSaleWb,
+            priceOfCheapestWithoutSaleWb,
+            linkToCheapestWb,
+          ] = productWithMinPriceWb;
 
           rows.value.push({
             "article number": String(props.productArticleNumbers[index]),
@@ -171,17 +191,21 @@ onMounted(() => {
             "old min price": props.productNewMinPrices[index], // new prices now become old
             "old max price": props.productNewMaxPrices[index], // new prices now become old
 
-            "new min price": priceOfCheapestWithSale,
-            "new min price pn": cheapestName, // 'pn' stands for product name
-            "new min price pl": linkToCheapest, // 'pl' stands for product link
+            "new min price ozon": priceOfCheapestWithSaleOzon,
+            "new min price pn ozon": cheapestNameOzon, // 'pn' stands for product name
+            "new min price pl ozon": linkToCheapestOzon, // 'pl' stands for product link
 
-            "new max price": priceOfMostExpensiveWithSale,
-            "new max price pn": mostExpensiveName, // 'pn' stands for product name
-            "new max price pl": linkToMostExpensive, // 'pl' stands for product link
+            "new min price wb": priceOfCheapestWithSaleWb,
+            "new min price pn wb": cheapestNameWb, // 'pn' stands for product name
+            "new min price pl wb": linkToCheapestWb, // 'pl' stands for product link
 
-            "default price": priceOfDefaultWithSale,
-            "default price pn": defaultName, // 'pn' stands for product name
-            "default price pl": linkToDefault, // 'pl' stands for product link
+            "new max price": priceOfMostExpensiveWithSaleOzon,
+            "new max price pn": mostExpensiveNameOzon, // 'pn' stands for product name
+            "new max price pl": linkToMostExpensiveOzon, // 'pl' stands for product link
+
+            "default price": priceOfDefaultWithSaleOzon,
+            "default price pn": defaultNameOzon, // 'pn' stands for product name
+            "default price pl": linkToDefaultOzon, // 'pl' stands for product link
           });
         }
       );
@@ -199,48 +223,55 @@ function fullDomain(partialPath) {
   return marketplaceDomain + improvedPartialPath;
 }
 
-async function findProductWithMinOrMaxPriceWb(productName, mode = "default") {
-  // wb stands for wildberries
-  const sortMethods = ["priceup", "pricedown"];
+// async function findProductWithMinOrMaxPriceWb(productName, mode = "default") {
+//   // wb stands for wildberries
+//   const sortMethods = ["priceup", "pricedown"];
 
-  let url = new URL("https://search.wb.ru/exactmatch/ru/common/v4/search");
+//   let url = new URL("https://search.wb.ru/exactmatch/ru/common/v4/search");
 
-  // url.searchParams.set("TestGroup", "no_test");
-  // url.searchParams.set("TestID", "no_test");
-  // url.searchParams.set("appType", "1");
-  url.searchParams.set("curr", "rub");
-  url.searchParams.set("dest", "-1257786");
-  url.searchParams.set("query", productName);
-  url.searchParams.set(
-    "regions",
-    "80,38,83,4,64,33,68,70,30,40,86,75,69,22,1,31,66,110,48,71,114"
-  );
-  url.searchParams.set("resultset", "catalog");
-  url.searchParams.set("spp", "0");
-  url.searchParams.set("suppressSpellcheck", "false");
-  url.searchParams.set("uclusters", "0");
+//   // url.searchParams.set("TestGroup", "no_test");
+//   // url.searchParams.set("TestID", "no_test");
+//   // url.searchParams.set("appType", "1");
+//   url.searchParams.set("curr", "rub");
+//   url.searchParams.set("dest", "-1257786");
+//   url.searchParams.set("query", productName);
+//   url.searchParams.set(
+//     "regions",
+//     "80,38,83,4,64,33,68,70,30,40,86,75,69,22,1,31,66,110,48,71,114"
+//   );
+//   url.searchParams.set("resultset", "catalog");
+//   url.searchParams.set("spp", "0");
+//   url.searchParams.set("suppressSpellcheck", "false");
+//   url.searchParams.set("uclusters", "0");
 
-  // let query;
-  mode === "min"
-    ? url.searchParams.set("sort", sortMethods[0])
-    : url.searchParams.set("sort", sortMethods[1]) && (mode = "max");
+//   // let query;
+//   mode === "min"
+//     ? url.searchParams.set("sort", sortMethods[0])
+//     : url.searchParams.set("sort", sortMethods[1]) && (mode = "max");
 
-  return fetch(url)
-    .then((response) => response.json())
-    .then((json) => {
-      let priceWithSale = json.data.products[0].salePriceU;
-      let priceWithoutSale = json.data.products[0].priceU;
-      let name = json.data.products[0].name;
+//   return fetch(url)
+//     .then((response) => response.json())
+//     .then((json) => {
+//       let priceWithSale = json.data.products[0].salePriceU;
+//       let priceWithoutSale = json.data.products[0].priceU;
+//       let name = json.data.products[0].name;
 
-      return [name, priceWithSale, priceWithoutSale];
-    })
-    .catch((e) => {
-      console.error(
-        `Error occurred on product = ${productName}, mode = ${mode} `
-      );
-      console.error(e);
-      console.error(url.href);
-    });
+//       return [name, priceWithSale, priceWithoutSale];
+//     })
+//     .catch((e) => {
+//       console.error(
+//         `Error occurred on product = ${productName}, mode = ${mode} `
+//       );
+//       console.error(e);
+//       console.error(url.href);
+//     });
+// }
+
+async function findProductWithMinOrMaxPriceWb(productName, mode = "min") {
+  const req = await fetch(`http://localhost:5000/wb/${productName}/${mode}`);
+  const res = await req.json();
+  console.log(res);
+  return res;
 }
 
 async function findProductWithMinOrMaxPriceOzon(productName, mode = "default") {
@@ -326,8 +357,9 @@ async function findProductsWithMinMaxPrice(productName) {
     findProductWithMinOrMaxPriceOzon(productName, "max"),
     findProductWithMinOrMaxPriceOzon(productName, "default"),
 
-    // findProductWithMinOrMaxPriceWb(productName, "min"),
+    findProductWithMinOrMaxPriceWb(productName, "min"),
     // findProductWithMinOrMaxPriceWb(productName, "max"),
+    // findProductWithMinOrMaxPriceWb(productName, "default"),
   ]);
 }
 </script>

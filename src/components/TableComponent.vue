@@ -2,12 +2,27 @@
   <q-table
     title="OZON marketplace"
     :rows="props.rows"
-    :columns="props.columns.filter((column) => !column.name.includes('pl'))"
+    :columns="props.columns"
+    :visible-columns="
+      props.columns
+        .filter((column) => !column.name.includes('pl'))
+        .map((item) => item.name)
+    "
     row-key="name"
     style="width: 100%; height: 600px"
     class="my-sticky-header-table"
   >
-    <template v-slot:body="props">
+    <template v-slot:body-cell-name="props">
+      <q-td :props="props">
+        <div>
+          <q-badge color="purple" :label="props.value" />
+        </div>
+        <div class="my-table-details">
+          {{ props.row.details }}
+        </div>
+      </q-td>
+    </template>
+    <!-- <template v-slot:body="props">
       <q-tr :props="props">
         <q-td key="article number" :props="props">
           {{ props.row["article number"] }}
@@ -123,7 +138,7 @@
           >
         </q-td>
       </q-tr>
-    </template>
+    </template> -->
   </q-table>
 </template>
 
@@ -131,6 +146,9 @@
 import { ref, defineProps } from "vue";
 const props = defineProps(["rows", "columns"]);
 const blankWord = ref("empty");
+console.error(props.columns);
+console.error(props.columns.filter((column) => !column.name.includes("pl")));
+console.error(props.rows);
 </script>
 
 <style>
