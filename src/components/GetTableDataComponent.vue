@@ -51,13 +51,57 @@ const visibleColumns = computed(() => {
     .map((item) => item.name);
 });
 
-onMounted(() => {
+onMounted(async () => {
   $q.loading.show({
     message: "Table is being loaded, please wait...",
     boxClass: "text-h5 text-weight-light",
   });
 
-  // const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  // const marketplaces = ["wb"];
+  // const sortModes = ["min", "max", "default"];
+
+  // let products = {};
+  // for (let marketplace of marketplaces) {
+  //   console.error(`Parsing ${marketplace}`);
+  //   for (let sortMode of sortModes) {
+  //     console.error(`with mode = ${sortMode}`);
+  //     const url = new URL(`http://localhost:5000/${marketplace}/${sortMode}`);
+  //     url.searchParams.set(
+  //       "productNames",
+  //       JSON.stringify(props.productNames.slice(0, 20))
+  //     );
+  //     let response = await fetch(url);
+  //     let json = await response.json();
+  //     console.error(json);
+
+  //     // here we generate keys on the spot
+  //     // these keys will be used when pushing data to table
+  //     let key = sortMode + "Price" + marketplace[0].toUpperCase();
+  //     products[key] = json;
+  //   }
+  // }
+
+  // for (let i = 0; i < props.productNames.length; ++i) {
+  //   let product = {};
+  //   for (let key in products) {
+  //     product[key] = product[key][i];
+  //   }
+  //   rows.value.push(product);
+  // }
+
+  // $q.loading.hide();
+  // showTable.value = true;
+
+  // the 'products' has a structure like this:
+  /*
+    {
+      "wb": {
+        "min": [{productName, productPriceWithSale, productPriceWithoutSale, productLink}],
+        "max": [{productName, productPriceWithSale, productPriceWithoutSale, productLink}],
+        "default": [{productName, productPriceWithSale, productPriceWithoutSale, productLink}],
+      }
+    }
+  */
 
   Promise.all(
     props.productNames.slice(0, 4).map(async (productName, index) => {
@@ -117,21 +161,21 @@ onMounted(() => {
             articleNumber: String(props.productArticleNumbers[index]),
             name: props.productNames[index],
 
-            newMinPriceOzon: priceOfCheapestWithSaleOzon,
-            newMinPricePnOzon: cheapestNameOzon, // 'pn' stands for product name
-            newMinPricePlOzon: linkToCheapestOzon, // 'pl' stands for product link
+            minPriceOzon: priceOfCheapestWithSaleOzon,
+            minPricePnOzon: cheapestNameOzon, // 'pn' stands for product name
+            minPricePlOzon: linkToCheapestOzon, // 'pl' stands for product link
 
-            newMinPriceWb: priceOfCheapestWithSaleWb,
-            newMinPricePnWb: cheapestNameWb, // 'pn' stands for product name
-            newMinPricePlWb: linkToCheapestWb, // 'pl' stands for product link
+            minPriceWb: priceOfCheapestWithSaleWb,
+            minPricePnWb: cheapestNameWb, // 'pn' stands for product name
+            minPricePlWb: linkToCheapestWb, // 'pl' stands for product link
 
-            newMaxPriceOzon: priceOfMostExpensiveWithSaleOzon,
-            newMaxPricePnOzon: mostExpensiveNameOzon, // 'pn' stands for product name
-            newMaxPricePlOzon: linkToMostExpensiveOzon, // 'pl' stands for product link
+            maxPriceOzon: priceOfMostExpensiveWithSaleOzon,
+            maxPricePnOzon: mostExpensiveNameOzon, // 'pn' stands for product name
+            maxPricePlOzon: linkToMostExpensiveOzon, // 'pl' stands for product link
 
-            newMaxPriceWb: priceOfMostExpensiveWithSaleWb,
-            newMaxPricePnWb: mostExpensiveNameWb, // 'pn' stands for product name
-            newMaxPricePlWb: linkToMostExpensiveWb, // 'pl' stands for product link
+            maxPriceWb: priceOfMostExpensiveWithSaleWb,
+            maxPricePnWb: mostExpensiveNameWb, // 'pn' stands for product name
+            maxPricePlWb: linkToMostExpensiveWb, // 'pl' stands for product link
 
             defaultPriceOzon: priceOfDefaultWithSaleOzon,
             defaultPricePnOzon: defaultNameOzon, // 'pn' stands for product name
@@ -156,50 +200,6 @@ function fullDomain(partialPath) {
   let marketplaceDomain = "https://www.ozon.ru/";
   return marketplaceDomain + improvedPartialPath;
 }
-
-// async function findProductWithMinOrMaxPriceWb(productName, mode = "default") {
-//   // wb stands for wildberries
-//   const sortMethods = ["priceup", "pricedown"];
-
-//   let url = new URL("https://search.wb.ru/exactmatch/ru/common/v4/search");
-
-//   // url.searchParams.set("TestGroup", "no_test");
-//   // url.searchParams.set("TestID", "no_test");
-//   // url.searchParams.set("appType", "1");
-//   url.searchParams.set("curr", "rub");
-//   url.searchParams.set("dest", "-1257786");
-//   url.searchParams.set("query", productName);
-//   url.searchParams.set(
-//     "regions",
-//     "80,38,83,4,64,33,68,70,30,40,86,75,69,22,1,31,66,110,48,71,114"
-//   );
-//   url.searchParams.set("resultset", "catalog");
-//   url.searchParams.set("spp", "0");
-//   url.searchParams.set("suppressSpellcheck", "false");
-//   url.searchParams.set("uclusters", "0");
-
-//   // let query;
-//   mode === "min"
-//     ? url.searchParams.set("sort", sortMethods[0])
-//     : url.searchParams.set("sort", sortMethods[1]) && (mode = "max");
-
-//   return fetch(url)
-//     .then((response) => response.json())
-//     .then((json) => {
-//       let priceWithSale = json.data.products[0].salePriceU;
-//       let priceWithoutSale = json.data.products[0].priceU;
-//       let name = json.data.products[0].name;
-
-//       return [name, priceWithSale, priceWithoutSale];
-//     })
-//     .catch((e) => {
-//       console.error(
-//         `Error occurred on product = ${productName}, mode = ${mode} `
-//       );
-//       console.error(e);
-//       console.error(url.href);
-//     });
-// }
 
 async function findProductWithMinOrMaxPriceWb(productName, mode = "min") {
   const req = await fetch(`http://localhost:5000/wb/${productName}/${mode}`);

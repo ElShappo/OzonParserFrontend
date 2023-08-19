@@ -1,15 +1,156 @@
 <template>
   <q-table
-    title="OZON marketplace"
+    title="Marketplaces"
     :rows="props.rows"
-    :columns="props.columns"
-    :visible-columns="props.visibleColumns"
     row-key="name"
     separator="cell"
     style="width: 100%; height: 600px"
     class="my-sticky-header-table"
+    id="main-table"
   >
-    <template v-slot:body-cell="props">
+    <template v-slot:header>
+      <tr class="headers-1 text-center">
+        <th rowspan="3" style="font-size: 1.5em">ID</th>
+        <th rowspan="3" style="font-size: 1.5em">name</th>
+        <th colspan="6" style="font-size: 1.5em">OZON</th>
+        <th colspan="6" style="font-size: 1.5em">WB</th>
+      </tr>
+      <tr class="headers-2 text-center">
+        <td colspan="2" style="font-size: 1.5em">min</td>
+        <td colspan="2" style="font-size: 1.5em">max</td>
+        <td colspan="2" style="font-size: 1.5em">default</td>
+
+        <td colspan="2" style="font-size: 1.5em">min</td>
+        <td colspan="2" style="font-size: 1.5em">max</td>
+        <td colspan="2" style="font-size: 1.5em">default</td>
+      </tr>
+      <tr class="headers-3 text-center">
+        <td>price</td>
+        <td>name</td>
+
+        <td>price</td>
+        <td>name</td>
+
+        <td>price</td>
+        <td>name</td>
+
+        <td>price</td>
+        <td>name</td>
+
+        <td>price</td>
+        <td>name</td>
+
+        <td>price</td>
+        <td>name</td>
+      </tr>
+    </template>
+
+    <template v-slot:body="props">
+      <tr :props="props">
+        <td :props="props" key="articleNumber" class="text-center">
+          {{ props.row["articleNumber"] }}
+        </td>
+        <td :props="props" key="name">{{ props.row["name"] }}</td>
+
+        <td :props="props" key="minPriceOzon" class="text-center">
+          {{ props.row["minPriceOzon"] }}
+        </td>
+        <td :props="props" key="minPricePnOzon">
+          <a
+            target="_blank"
+            :href="props.row['minPricePlOzon']"
+            v-if="
+              props.row['minPricePnOzon'] !== null &&
+              props.row['minPricePnOzon'] !== undefined
+            "
+            >{{ props.row["minPricePnOzon"] }}</a
+          >
+          <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
+        </td>
+
+        <td :props="props" key="maxPriceOzon" class="text-center">
+          {{ props.row["maxPriceOzon"] }}
+        </td>
+        <td :props="props" key="maxPricePlOzon">
+          <a
+            target="_blank"
+            :href="props.row['maxPricePlOzon']"
+            v-if="
+              props.row['maxPricePnOzon'] !== null &&
+              props.row['maxPricePnOzon'] !== undefined
+            "
+            >{{ props.row["maxPricePnOzon"] }}</a
+          >
+          <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
+        </td>
+
+        <td :props="props" key="defaultPriceOzon" class="text-center">
+          {{ props.row["defaultPriceOzon"] }}
+        </td>
+        <td :props="props" key="defaultPricePlOzon">
+          <a
+            target="_blank"
+            :href="props.row['defaultPricePlOzon']"
+            v-if="
+              props.row['defaultPricePnOzon'] !== null &&
+              props.row['defaultPricePnOzon'] !== undefined
+            "
+            >{{ props.row["defaultPricePnOzon"] }}</a
+          >
+          <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
+        </td>
+
+        <td :props="props" key="minPriceWb" class="text-center">
+          {{ props.row["minPriceWb"] }}
+        </td>
+        <td :props="props" key="minPricePlWb">
+          <a
+            target="_blank"
+            :href="props.row['minPricePlWb']"
+            v-if="
+              props.row['minPricePnWb'] !== null &&
+              props.row['minPricePnWb'] !== undefined
+            "
+            >{{ props.row["minPricePnWb"] }}</a
+          >
+          <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
+        </td>
+
+        <td :props="props" key="maxPriceWb" class="text-center">
+          {{ props.row["maxPriceWb"] }}
+        </td>
+        <td :props="props" key="maxPricePlWb">
+          <a
+            target="_blank"
+            :href="props.row['maxPricePlWb']"
+            v-if="
+              props.row['maxPricePnWb'] !== null &&
+              props.row['maxPricePnWb'] !== undefined
+            "
+            >{{ props.row["maxPricePnWb"] }}</a
+          >
+          <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
+        </td>
+
+        <td :props="props" key="defaultPriceWb" class="text-center">
+          {{ props.row["defaultPriceWb"] }}
+        </td>
+        <td :props="props" key="defaultPricePlWb">
+          <a
+            target="_blank"
+            :href="props.row['defaultPricePlWb']"
+            v-if="
+              props.row['defaultPricePnWb'] !== null &&
+              props.row['defaultPricePnWb'] !== undefined
+            "
+            >{{ props.row["defaultPricePnWb"] }}</a
+          >
+          <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
+        </td>
+      </tr>
+    </template>
+
+    <!-- <template v-slot:body-cell="props">
       <q-td :props="props">
         <div v-if="props.value !== null && props.value !== undefined">
           {{ props.value }}
@@ -20,61 +161,61 @@
       </q-td>
     </template>
 
-    <template v-slot:body-cell-newMinPricePnOzon="props">
+    <template v-slot:body-cell-minPricePnOzon="props">
       <q-td :props="props">
         <a
           target="_blank"
-          :href="props.row['newMinPricePlOzon']"
+          :href="props.row['minPricePlOzon']"
           v-if="
-            props.row['newMinPricePnOzon'] !== null &&
-            props.row['newMinPricePnOzon'] !== undefined
+            props.row['minPricePnOzon'] !== null &&
+            props.row['minPricePnOzon'] !== undefined
           "
-          >{{ props.row["newMinPricePnOzon"] }}</a
+          >{{ props.row["minPricePnOzon"] }}</a
         >
         <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
       </q-td>
     </template>
 
-    <template v-slot:body-cell-newMinPricePnWb="props">
+    <template v-slot:body-cell-minPricePnWb="props">
       <q-td :props="props">
         <a
           target="_blank"
-          :href="props.row['newMinPricePlWb']"
+          :href="props.row['minPricePlWb']"
           v-if="
-            props.row['newMinPricePnWb'] !== null &&
-            props.row['newMinPricePnWb'] !== undefined
+            props.row['minPricePnWb'] !== null &&
+            props.row['minPricePnWb'] !== undefined
           "
-          >{{ props.row["newMinPricePnWb"] }}</a
+          >{{ props.row["minPricePnWb"] }}</a
         >
         <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
       </q-td>
     </template>
 
-    <template v-slot:body-cell-newMaxPricePnOzon="props">
+    <template v-slot:body-cell-maxPricePnOzon="props">
       <q-td :props="props">
         <a
           target="_blank"
-          :href="props.row['newMaxPricePlOzon']"
+          :href="props.row['maxPricePlOzon']"
           v-if="
-            props.row['newMaxPricePnOzon'] !== null &&
-            props.row['newMaxPricePnOzon'] !== undefined
+            props.row['maxPricePnOzon'] !== null &&
+            props.row['maxPricePnOzon'] !== undefined
           "
-          >{{ props.row["newMaxPricePnOzon"] }}</a
+          >{{ props.row["maxPricePnOzon"] }}</a
         >
         <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
       </q-td>
     </template>
 
-    <template v-slot:body-cell-newMaxPricePnWb="props">
+    <template v-slot:body-cell-maxPricePnWb="props">
       <q-td :props="props">
         <a
           target="_blank"
-          :href="props.row['newMaxPricePlWb']"
+          :href="props.row['maxPricePlWb']"
           v-if="
-            props.row['newMaxPricePnWb'] !== null &&
-            props.row['newMaxPricePnWb'] !== undefined
+            props.row['maxPricePnWb'] !== null &&
+            props.row['maxPricePnWb'] !== undefined
           "
-          >{{ props.row["newMaxPricePnWb"] }}</a
+          >{{ props.row["maxPricePnWb"] }}</a
         >
         <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
       </q-td>
@@ -108,7 +249,7 @@
         >
         <span class="text-italic text-grey-5" v-else>{{ blankWord }}</span>
       </q-td>
-    </template>
+    </template> -->
   </q-table>
 </template>
 
@@ -123,6 +264,15 @@ console.error(props.visibleColumns);
 </script>
 
 <style>
+.headers-1 td,
+.headers-2 td,
+.headers-3 td,
+.headers-1 th,
+.headers-2 th,
+.headers-3 th {
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
 .q-item__section.column.q-item__section--side {
   text-align: center;
 }
