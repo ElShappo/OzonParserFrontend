@@ -17,7 +17,8 @@ function getMaxColumnWidthByColumnName(
   worksheet,
   columnName,
   startRow,
-  endRow
+  endRow,
+  method
 ) {
   let widths = [];
   for (let i = startRow; i < endRow; ++i) {
@@ -30,11 +31,11 @@ function getMaxColumnWidthByColumnName(
     widths.push(String(cell.v).length); // string conversion is required because we might need to find the length of a number or the length of some other type
   }
   console.log("Now at " + columnName);
-  console.log(Math.max(...widths));
-  return Math.max(...widths);
+  console.log(method(widths));
+  return method(widths);
 }
 
-function getColumnStyles(worksheet) {
+function getColumnStyles(worksheet, method) {
   const range = worksheet["!fullref"]; // get the cell range in the table (e.g. it can be A1:BC75)
   const [startAddress, endAddress] = range.match(/[a-z]+\d+/gi); // from comment above 'startAddress' may contain A1, 'endAddress' - BC75
   const [startColumn, endColumn] = range.match(/[a-z]+/gi); // from comment above 'startColumn' may contain A, 'endColumn' - BC
@@ -52,7 +53,8 @@ function getColumnStyles(worksheet) {
         worksheet,
         columnName,
         startRow,
-        endRow
+        endRow,
+        method
       ),
     });
   }
@@ -76,7 +78,9 @@ function exportTable() {
   console.log(XLSX.utils.encode_col(26));
   console.log(XLSX.utils.decode_col("B"));
 
-  worksheet["!cols"] = getColumnStyles(worksheet);
+  worksheet["!cols"] = getColumnStyles(worksheet, function (widths) {
+    return Math.max(...widths);
+  });
   XLSX.writeFile(workbook, "test1.xlsx");
 }
 </script>
