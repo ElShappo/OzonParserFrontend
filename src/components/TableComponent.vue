@@ -7,6 +7,10 @@
     style="width: 100%; height: 600px"
     class="my-sticky-header-table"
     id="main-table"
+    :pagination="{
+      rowsPerPage: props.rows.length,
+    }"
+    :hide-pagination="true"
   >
     <template v-slot:header>
       <tr class="headers-1 text-center">

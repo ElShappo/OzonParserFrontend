@@ -104,7 +104,7 @@ onMounted(async () => {
   */
 
   Promise.all(
-    props.productNames.slice(0, 4).map(async (productName, index) => {
+    props.productNames.map(async (productName, index) => {
       return findProductsWithMinMaxPrice(productName).then(
         ([
           productWithMinPriceOzon,
